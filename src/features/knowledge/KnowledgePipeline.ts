@@ -1,5 +1,6 @@
 import { pdfProcessor } from './pdf/PDFProcessor';
 import { voiceProcessor } from './voice/VoiceProcessor';
+import { webProcessor } from './web/WebProcessor';
 import { noteRepository } from '../notes/NoteRepository';
 import { logger } from '../../core/logging/Logger';
 import { Platform } from '../../platform/Platform';
@@ -34,6 +35,18 @@ export class KnowledgePipeline {
       logger.info('Successfully ingested Voice Note');
     } catch (error) {
       logger.error('Failed to ingest voice', error);
+      throw error;
+    }
+  }
+
+  async ingestWebpage(url: string): Promise<void> {
+    try {
+      const text = await webProcessor.process(url);
+      const metadata = await webProcessor.extractMetadata(url);
+      await noteRepository.create(`Web: ${metadata.title}`, text);
+      logger.info(`Successfully ingested Webpage: ${url}`);
+    } catch (error) {
+      logger.error(`Failed to ingest webpage: ${url}`, error);
       throw error;
     }
   }
