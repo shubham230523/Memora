@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/design/theme/ThemeContext';
 import { useKnowledgeStore } from '@/features/knowledge/KnowledgeStore';

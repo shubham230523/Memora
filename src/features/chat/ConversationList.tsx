@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-import { chatRepository } from './ChatRepository';
+import { Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { Conversation } from './models/Conversation';
 import { useTheme } from '@/design/theme/ThemeContext';
 import { Card } from '@/design/components/Card';

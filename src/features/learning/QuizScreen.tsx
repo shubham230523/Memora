@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { Quiz, QuizQuestion } from './models/Learning';
+import { Quiz } from './models/Learning';
 import { useTheme } from '@/design/theme/ThemeContext';
 import { Card } from '@/design/components/Card';
 import { Button } from '@/design/components/Button';

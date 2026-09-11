@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, Text, StyleSheet, Switch } from 'react-native';
 import { useTheme } from '@/design/theme/ThemeContext';
 import { useSettingsStore } from '@/features/settings/SettingsStore';

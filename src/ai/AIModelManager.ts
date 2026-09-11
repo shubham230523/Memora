@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { Platform } from '../platform/Platform';
 import { logger } from '../core/logging/Logger';
 
 export type ModelState =
@@ -20,16 +19,12 @@ interface AIModelStore {
   deleteModel: () => Promise<void>;
 }
 
-const MODEL_FILENAME = 'qwen2.5-1.5b-instruct-q4_k_m.gguf';
-const MODEL_URL = 'https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf';
-
 export const useAIModelStore = create<AIModelStore>((set, get) => ({
   state: 'NOT_INSTALLED',
   progress: 0,
   error: null,
 
   checkStatus: async () => {
-    // TODO: Use Platform.FileSystem to check if file exists
     // For now, assume NOT_INSTALLED
     set({ state: 'NOT_INSTALLED' });
   },
@@ -41,12 +36,10 @@ export const useAIModelStore = create<AIModelStore>((set, get) => ({
 
     try {
       logger.info('Starting model download...');
-      // In a real implementation, we would use expo-file-system
-      // with a download progress callback.
 
       // Simulate progress
       for (let i = 0; i <= 10; i++) {
-        await new Promise(r => setTimeout(resolve => r(resolve), 500));
+        await new Promise(r => setTimeout(() => r(undefined), 500));
         set({ progress: i / 10 });
       }
 
@@ -60,6 +53,5 @@ export const useAIModelStore = create<AIModelStore>((set, get) => ({
 
   deleteModel: async () => {
     set({ state: 'NOT_INSTALLED', progress: 0 });
-    // TODO: Delete file via Platform.FileSystem
   }
 }));

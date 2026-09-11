@@ -1,5 +1,5 @@
 import { getDb } from '../../database/db';
-import { Quiz, QuizQuestion } from './models/Learning';
+import { Quiz } from './models/Learning';
 import { generateId } from '../../shared/utils/id';
 
 export class QuizRepository {

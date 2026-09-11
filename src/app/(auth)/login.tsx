@@ -1,8 +1,7 @@
-import React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { Button } from '@/design/components/Button';
 import { TextInput } from '@/design/components/TextInput';
-import { ThemeProvider, useTheme } from '@/design/theme/ThemeContext';
+import { useTheme } from '@/design/theme/ThemeContext';
 
 export default function LoginScreen() {
   const { theme } = useTheme();

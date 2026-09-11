@@ -1,4 +1,3 @@
-import React from 'react';
 import { Tabs } from 'expo-router';
 import { Icon } from '@/design/components/Icon';
 import { useTheme } from '@/design/theme/ThemeContext';

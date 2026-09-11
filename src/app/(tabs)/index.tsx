@@ -1,11 +1,10 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/design/theme/ThemeContext';
 import { Card } from '@/design/components/Card';
 import { useHomeStore } from '@/features/home/HomeStore';
 import { Icon } from '@/design/components/Icon';
-import { Button } from '@/design/components/Button';
 import { EmptyState } from '@/design/components/EmptyState';
 import { Platform } from '@/platform/Platform';
 import { knowledgePipeline } from '@/features/knowledge/KnowledgePipeline';

@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import { useTheme } from '@/design/theme/ThemeContext';
 import { useSearchStore } from '@/features/search/SearchStore';

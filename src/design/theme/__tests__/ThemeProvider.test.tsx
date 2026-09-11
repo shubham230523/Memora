@@ -1,4 +1,3 @@
-import React from 'react';
 import { Text } from 'react-native';
 import { render, screen, fireEvent, act } from '@testing-library/react-native';
 import { ThemeProvider, useTheme } from '../ThemeContext';

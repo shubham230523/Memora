@@ -1,10 +1,26 @@
-import * as DocumentPicker from 'expo-document-picker';
-import * as ImagePicker from 'expo-image-picker';
 import { IFilePickerProvider, FilePickerResult } from '../interfaces/FilePicker';
 import { logger } from '../../core/logging/Logger';
 
+let DocumentPicker: typeof import('expo-document-picker') | null = null;
+try {
+  DocumentPicker = require('expo-document-picker');
+} catch (e) {
+  logger.warn('expo-document-picker not found. Document picking will be disabled.');
+}
+
+let ImagePicker: typeof import('expo-image-picker') | null = null;
+try {
+  ImagePicker = require('expo-image-picker');
+} catch (e) {
+  logger.warn('expo-image-picker not found. Image picking will be disabled.');
+}
+
 export class ExpoFilePicker implements IFilePickerProvider {
   async pickDocument(options?: { type?: string | string[] }): Promise<FilePickerResult | null> {
+    if (!DocumentPicker) {
+      logger.error('DocumentPicker module is missing');
+      return null;
+    }
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: options?.type || '*/*',
@@ -27,6 +43,10 @@ export class ExpoFilePicker implements IFilePickerProvider {
   }
 
   async pickImage(): Promise<FilePickerResult | null> {
+    if (!ImagePicker) {
+      logger.error('ImagePicker module is missing');
+      return null;
+    }
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,

@@ -1,5 +1,4 @@
-import React from 'react';
-import { render, screen } from '@/testing/test-utils';
+import { render } from '@/testing/test-utils';
 import Index from '../index';
 import { Redirect } from 'expo-router';
 

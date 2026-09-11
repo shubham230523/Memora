@@ -1,11 +1,21 @@
-import * as SQLite from 'expo-sqlite';
 import { appConfig } from '../core/config/appConfig';
 import { logger } from '../core/logging/Logger';
 
-let db: SQLite.SQLiteDatabase | null = null;
+// Safely require expo-sqlite to prevent crash if native module is missing
+let SQLite: typeof import('expo-sqlite') | null = null;
+try {
+  SQLite = require('expo-sqlite');
+} catch (e) {
+  logger.warn('expo-sqlite not found or native module missing');
+}
+
+let db: any = null;
 
 export const getDb = async () => {
   if (db) return db;
+  if (!SQLite) {
+    throw new Error('Database not available in this environment');
+  }
 
   try {
     db = await SQLite.openDatabaseAsync(appConfig.persistence.dbName);
@@ -18,6 +28,10 @@ export const getDb = async () => {
 };
 
 export const initDb = async () => {
+  if (!SQLite) {
+    logger.warn('Skipping DB init: SQLite not available');
+    return;
+  }
   const database = await getDb();
 
   // Enable foreign keys

@@ -1,4 +1,3 @@
-import { Platform } from '../../../platform/Platform';
 import { logger } from '../../../core/logging/Logger';
 
 export interface PDFMetadata {
@@ -16,7 +15,7 @@ export class PDFProcessor {
     return "This is extracted text from PDF " + uri;
   }
 
-  async extractMetadata(uri: string): Promise<PDFMetadata> {
+  async extractMetadata(_uri: string): Promise<PDFMetadata> {
     return {
       title: 'Sample PDF',
       pageCount: 1,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '@/design/theme/ThemeContext';
@@ -6,7 +6,6 @@ import { knowledgeRepository } from '@/features/knowledge/KnowledgeRepository';
 import { KnowledgeItem } from '@/features/knowledge/models/KnowledgeItem';
 import { Loading } from '@/design/components/Loading';
 import { Button } from '@/design/components/Button';
-import { Icon } from '@/design/components/Icon';
 
 export default function KnowledgeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

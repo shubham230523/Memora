@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Redirect } from 'expo-router';
 import { useSettingsStore } from '@/features/settings/SettingsStore';
 import { useAIModelStore } from '@/ai/AIModelManager';

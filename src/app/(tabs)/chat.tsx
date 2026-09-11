@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, KeyboardAvoidingView, Platform as RNPlatform } from 'react-native';
 import { useTheme } from '@/design/theme/ThemeContext';
 import { useChatStore } from '@/features/chat/ChatStore';
@@ -41,7 +41,7 @@ export default function ChatScreen() {
             <Card style={[
               styles.messageCard,
               { backgroundColor: item.role === 'user' ? theme.colors.primary : theme.colors.surface }
-            ]}>
+            ] as any}>
               <Text style={{ color: item.role === 'user' ? '#FFF' : theme.colors.text }}>
                 {item.content}
               </Text>

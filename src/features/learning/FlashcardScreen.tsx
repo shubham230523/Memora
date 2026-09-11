@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { flashcardRepository } from './FlashcardRepository';
 import { Flashcard } from './models/Learning';
 import { useTheme } from '@/design/theme/ThemeContext';

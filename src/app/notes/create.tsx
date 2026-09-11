@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/design/theme/ThemeContext';

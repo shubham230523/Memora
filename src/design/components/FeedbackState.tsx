@@ -1,5 +1,4 @@
-import React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, StyleProp, ViewStyle } from 'react-native';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
@@ -13,6 +12,7 @@ interface FeedbackStateProps {
   actionTitle?: string;
   onActionPress?: () => void;
   type?: 'error' | 'empty' | 'info';
+  style?: StyleProp<ViewStyle>;
 }
 
 export const FeedbackState: React.FC<FeedbackStateProps> = ({
@@ -22,6 +22,7 @@ export const FeedbackState: React.FC<FeedbackStateProps> = ({
   actionTitle,
   onActionPress,
   type = 'info',
+  style,
 }) => {
   const isDark = false; // TODO: Hook into theme
   const themeColors = isDark ? colors.dark : colors.light;
@@ -32,7 +33,7 @@ export const FeedbackState: React.FC<FeedbackStateProps> = ({
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]}>
       {icon && <Icon name={icon} size={64} color={getIconColor()} />}
       <Text style={[styles.title, { color: themeColors.text }]}>{title}</Text>
       {message && (

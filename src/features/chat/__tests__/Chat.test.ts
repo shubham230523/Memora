@@ -1,5 +1,4 @@
 import { useChatStore } from '../ChatStore';
-import { chatRepository } from '../ChatRepository';
 
 jest.mock('../ChatRepository', () => ({
   chatRepository: {

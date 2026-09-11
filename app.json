@@ -18,7 +18,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.Memora"
+      "package": "com.anonymous.Memora",
+      "ndkVersion": "27.1.12297006"
     },
     "web": {
       "output": "static",

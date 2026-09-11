@@ -1,4 +1,4 @@
-import React from 'react';
+import { ViewStyle, StyleProp } from 'react-native';
 import { FeedbackState } from './FeedbackState';
 
 interface EmptyStateProps {
@@ -7,6 +7,7 @@ interface EmptyStateProps {
   icon?: any; // IconName
   actionTitle?: string;
   onActionPress?: () => void;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
@@ -15,6 +16,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   icon = 'database-outline',
   actionTitle,
   onActionPress,
+  style,
 }) => (
   <FeedbackState
     type="empty"
@@ -23,5 +25,6 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     message={message}
     actionTitle={actionTitle}
     onActionPress={onActionPress}
+    style={style}
   />
 );

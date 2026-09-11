@@ -1,9 +1,8 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '@/design/theme/ThemeContext';
 import { useLearningStore } from '@/features/learning/LearningStore';
 import { Card } from '@/design/components/Card';
-import { Icon } from '@/design/components/Icon';
 import { Loading } from '@/design/components/Loading';
 
 export default function LearningScreen() {

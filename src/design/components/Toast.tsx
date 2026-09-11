@@ -2,9 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Animated,
   StyleSheet,
-  Text,
-  ViewStyle,
-  TextStyle
+  Text
 } from 'react-native';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';

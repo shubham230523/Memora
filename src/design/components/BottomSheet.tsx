@@ -3,7 +3,6 @@ import {
   Modal,
   View,
   StyleSheet,
-  TouchableOpacity,
   TouchableWithoutFeedback
 } from 'react-native';
 import { colors } from '../theme/colors';

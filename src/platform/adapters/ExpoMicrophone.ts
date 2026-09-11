@@ -1,16 +1,25 @@
-import { Audio } from 'expo-av';
 import { IMicrophoneProvider } from '../interfaces/Microphone';
 import { logger } from '../../core/logging/Logger';
 
+// Safely require expo-av to prevent crash if native module is missing
+let Audio: any;
+try {
+  Audio = require('expo-av').Audio;
+} catch (e) {
+  logger.warn('expo-av not found or native module missing');
+}
+
 export class ExpoMicrophone implements IMicrophoneProvider {
-  private recording: Audio.Recording | null = null;
+  private recording: any = null;
 
   async requestPermissions(): Promise<boolean> {
+    if (!Audio) return false;
     const { status } = await Audio.requestPermissionsAsync();
     return status === 'granted';
   }
 
   async startRecording(): Promise<void> {
+    if (!Audio) throw new Error('Microphone not available in this environment');
     try {
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,

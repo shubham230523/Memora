@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { useColorScheme } from 'react-native';
 import { colors } from './colors';
 import { spacing } from './spacing';

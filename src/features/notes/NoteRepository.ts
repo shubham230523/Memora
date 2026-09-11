@@ -47,11 +47,14 @@ export class NoteRepository {
     const sets = Object.keys(updates)
       .map(key => `${key} = ?`)
       .join(', ');
-    const values = Object.values(updates).map(v => typeof v === 'boolean' ? (v ? 1 : 0) : v);
+    const values = Object.values(updates).map(v => {
+      if (typeof v === 'boolean') return v ? 1 : 0;
+      return v as any; // Cast to any to satisfy SQLiteBindValue
+    });
 
     await db.runAsync(
       `UPDATE knowledge_items SET ${sets}, updatedAt = ? WHERE id = ?`,
-      [...values, now, id]
+      [...values, now, id] as any
     );
   }
 

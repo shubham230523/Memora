@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import { graphRepository } from './GraphRepository';
 import { useTheme } from '@/design/theme/ThemeContext';

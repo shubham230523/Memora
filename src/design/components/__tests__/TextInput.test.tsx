@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, fireEvent, screen } from '@/testing/test-utils';
 import { TextInput } from '../TextInput';
 
