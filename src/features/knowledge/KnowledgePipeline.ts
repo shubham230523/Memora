@@ -2,6 +2,7 @@ import { pdfProcessor } from './pdf/PDFProcessor';
 import { voiceProcessor } from './voice/VoiceProcessor';
 import { webProcessor } from './web/WebProcessor';
 import { noteRepository } from '../notes/NoteRepository';
+import { chunkRepository } from './ChunkRepository';
 import { logger } from '../../core/logging/Logger';
 import { Platform } from '../../platform/Platform';
 
@@ -9,12 +10,29 @@ export class KnowledgePipeline {
   async ingestPDF(uri: string, name: string): Promise<void> {
     try {
       const text = await pdfProcessor.process(uri);
-      await noteRepository.create(`PDF: ${name}`, text);
-      logger.info(`Successfully ingested PDF: ${name}`);
+      const note = await noteRepository.create(`PDF: ${name}`, text);
+
+      // Document chunking (MVP requirement 9)
+      const chunks = this.chunkText(text, 500); // 500 chars chunks for MVP
+      await chunkRepository.saveChunks(chunks.map((content, index) => ({
+        knowledgeItemId: note.id,
+        content,
+        index,
+      })));
+
+      logger.info(`Successfully ingested PDF: ${name} with ${chunks.length} chunks`);
     } catch (error) {
       logger.error(`Failed to ingest PDF: ${name}`, error);
       throw error;
     }
+  }
+
+  private chunkText(text: string, size: number): string[] {
+    const chunks: string[] = [];
+    for (let i = 0; i < text.length; i += size) {
+      chunks.push(text.substring(i, i + size));
+    }
+    return chunks;
   }
 
   async ingestImage(uri: string): Promise<void> {
