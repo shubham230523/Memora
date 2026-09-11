@@ -1,5 +1,5 @@
 import { IEmbeddingProvider } from '../interfaces/EmbeddingProvider';
-import { appConfig } from '../../../core/config/appConfig';
+import { appConfig } from '../../core/config/appConfig';
 
 export class OpenRouterEmbeddingAdapter implements IEmbeddingProvider {
   private apiKey: string | undefined;

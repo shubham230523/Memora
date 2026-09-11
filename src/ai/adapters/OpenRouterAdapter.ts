@@ -1,7 +1,7 @@
 import { IAIProvider } from '../interfaces/AIProvider';
 import { AIRequest, AIResponse, AIStreamChunk } from '../models/AIModels';
-import { appConfig } from '../../../core/config/appConfig';
-import { AppError, ErrorCode } from '../../../core/errors/AppError';
+import { appConfig } from '../../core/config/appConfig';
+import { AppError, ErrorCode } from '../../core/errors/AppError';
 
 export class OpenRouterAdapter implements IAIProvider {
   private apiKey: string | undefined;

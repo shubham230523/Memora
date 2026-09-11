@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { Conversation, Message } from './models/Conversation';
 import { chatRepository } from './ChatRepository';
-import { OpenRouterAdapter } from '../ai/adapters/OpenRouterAdapter';
+import { getAIProvider } from '../../ai/AIProviderFactory';
 import { knowledgeRepository } from '../knowledge/KnowledgeRepository';
 import { logger } from '../../core/logging/Logger';
 
@@ -12,8 +12,6 @@ interface ChatState {
   startNewChat: () => Promise<void>;
   sendMessage: (content: string) => Promise<void>;
 }
-
-const aiProvider = new OpenRouterAdapter();
 
 export const useChatStore = create<ChatState>((set, get) => ({
   currentConversation: null,
@@ -49,7 +47,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const context = relevantKnowledge.map(k => `Source: ${k.title}\nContent: ${k.content}`).join('\n\n');
 
       // 3. AI Generation
-      const systemPrompt = `You are Recall AI. Use the following knowledge to answer: \n\n${context}`;
+      const aiProvider = getAIProvider();
+      const systemPrompt = `You are Memora AI. Use the following knowledge to answer: \n\n${context}`;
       const response = await aiProvider.generate({
         prompt: content,
         systemPrompt,

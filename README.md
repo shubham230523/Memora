@@ -1,8 +1,8 @@
-# Recall 🧠
+# Memora 🧠
 
-**Your knowledge, remembered.**
+**Your knowledge, understood — locally.**
 
-Recall is a personal AI knowledge OS built with React Native and Expo.
+Memora is a personal AI knowledge OS built with React Native and Expo.
 
 ## Features
 - **Capture everything**: Notes, PDFs, Images, Voice, Webpages.

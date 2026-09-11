@@ -1,7 +1,7 @@
 import { env } from './env';
 
 export const appConfig = {
-  name: 'Recall',
+  name: 'Memora',
   version: '1.0.0',
   api: {
     baseUrl: env.BACKEND_URL,
@@ -22,6 +22,6 @@ export const appConfig = {
     level: env.LOG_LEVEL,
   },
   persistence: {
-    dbName: 'recall.db',
+    dbName: 'memora.db',
   },
 } as const;

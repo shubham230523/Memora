@@ -52,7 +52,7 @@ export default function ChatScreen() {
 
       <View style={[styles.inputArea, { backgroundColor: theme.colors.surface, borderTopColor: theme.colors.border }]}>
         <TextInput
-          placeholder="Ask Recall about your knowledge..."
+          placeholder="Ask Memora about your knowledge..."
           value={inputText}
           onChangeText={setInputText}
           style={styles.textInput}

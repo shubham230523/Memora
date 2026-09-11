@@ -1,12 +1,11 @@
-import { OpenRouterAdapter } from '../ai/adapters/OpenRouterAdapter';
+import { getAIProvider } from '../../ai/AIProviderFactory';
 import { logger } from '../../core/logging/Logger';
-
-const aiProvider = new OpenRouterAdapter();
 
 export class LearningAgent {
   async generateRoadmap(goal: string): Promise<string> {
     logger.info(`Generating roadmap for goal: ${goal}`);
     try {
+      const aiProvider = getAIProvider();
       const response = await aiProvider.generate({
         prompt: `Create a step-by-step learning roadmap for: ${goal}`,
         systemPrompt: "You are an expert tutor. Break down complex topics into small, achievable steps.",

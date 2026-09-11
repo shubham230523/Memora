@@ -9,7 +9,7 @@ export default function LoginScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Text style={[styles.title, { color: theme.colors.text }]}>Welcome to Recall</Text>
+      <Text style={[styles.title, { color: theme.colors.text }]}>Welcome to Memora</Text>
       <TextInput label="Email" placeholder="email@example.com" />
       <TextInput label="Password" placeholder="••••••••" secureTextEntry />
       <Button

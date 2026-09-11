@@ -1,4 +1,4 @@
-# Recall Architecture Plan
+# Memora Architecture Plan
 
 ## 1. Directory Structure
 ```text

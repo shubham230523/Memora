@@ -24,8 +24,54 @@ jest.mock('expo-splash-screen', () => ({
   hideAsync: jest.fn(),
 }));
 
-try {
-  jest.mock('@expo/vector-icons', () => ({
-    MaterialCommunityIcons: 'Icon',
-  }));
-} catch (e) {}
+jest.mock('@expo/vector-icons', () => ({
+  MaterialCommunityIcons: 'Icon',
+}));
+
+jest.mock('expo-document-picker', () => ({
+  getDocumentAsync: jest.fn(),
+}));
+
+jest.mock('expo-image-picker', () => ({
+  launchImageLibraryAsync: jest.fn(),
+  launchCameraAsync: jest.fn(),
+  requestCameraPermissionsAsync: jest.fn(),
+  MediaTypeOptions: { Images: 'images' },
+}));
+
+jest.mock('expo-av', () => ({
+  Audio: {
+    Recording: {
+      createAsync: jest.fn(),
+    },
+    setAudioModeAsync: jest.fn(),
+    requestPermissionsAsync: jest.fn(),
+  },
+}));
+
+jest.mock('expo-secure-store', () => ({
+  setItemAsync: jest.fn(),
+  getItemAsync: jest.fn(),
+  deleteItemAsync: jest.fn(),
+}));
+
+jest.mock('expo-notifications', () => ({
+  requestPermissionsAsync: jest.fn(),
+  scheduleNotificationAsync: jest.fn(),
+  cancelAllScheduledNotificationsAsync: jest.fn(),
+  SchedulableTriggerInputTypes: { TIME_INTERVAL: 'time_interval' },
+}));
+
+jest.mock('expo-network', () => ({
+  getNetworkStateAsync: jest.fn(),
+}));
+
+jest.mock('expo-task-manager', () => ({
+  defineTask: jest.fn(),
+  isTaskRegisteredAsync: jest.fn(),
+}));
+
+jest.mock('expo-background-fetch', () => ({
+  registerTaskAsync: jest.fn(),
+  BackgroundFetchResult: { NewData: 1, NoData: 2, Failed: 3 },
+}));
