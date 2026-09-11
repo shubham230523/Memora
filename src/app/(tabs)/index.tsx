@@ -1,14 +1,18 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTheme } from '@/design/theme/ThemeContext';
 import { Card } from '@/design/components/Card';
 import { useHomeStore } from '@/features/home/HomeStore';
 import { Icon } from '@/design/components/Icon';
 import { Button } from '@/design/components/Button';
 import { EmptyState } from '@/design/components/EmptyState';
+import { Platform } from '@/platform/Platform';
+import { knowledgePipeline } from '@/features/knowledge/KnowledgePipeline';
 
 export default function HomeScreen() {
   const { theme } = useTheme();
+  const router = useRouter();
   const { stats, recentItems, isLoading, fetchHomeData } = useHomeStore();
 
   useEffect(() => {
@@ -49,10 +53,32 @@ export default function HomeScreen() {
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Quick Capture</Text>
         <View style={styles.captureGrid}>
-          <CaptureButton icon="note-plus" label="Note" />
-          <CaptureButton icon="file-pdf-box" label="PDF" />
-          <CaptureButton icon="camera" label="Scan" />
-          <CaptureButton icon="microphone" label="Voice" />
+          <CaptureButton
+            icon="note-plus"
+            label="Note"
+            onPress={() => router.push('/notes/create')}
+          />
+          <CaptureButton
+            icon="file-pdf-box"
+            label="PDF"
+            onPress={async () => {
+              const res = await Platform.FilePicker.pickDocument({ type: 'application/pdf' });
+              if (res) await knowledgePipeline.ingestPDF(res.uri, res.name);
+            }}
+          />
+          <CaptureButton
+            icon="camera"
+            label="Scan"
+            onPress={async () => {
+              const res = await Platform.Camera.takePhoto();
+              if (res) await knowledgePipeline.ingestImage(res.uri);
+            }}
+          />
+          <CaptureButton
+            icon="microphone"
+            label="Voice"
+            onPress={() => {}}
+          />
         </View>
       </View>
 
@@ -87,10 +113,10 @@ const StatCard = ({ label, value, icon, color }: any) => {
   );
 };
 
-const CaptureButton = ({ icon, label }: any) => {
+const CaptureButton = ({ icon, label, onPress }: any) => {
   const { theme } = useTheme();
   return (
-    <TouchableOpacity style={styles.captureButton}>
+    <TouchableOpacity style={styles.captureButton} onPress={onPress}>
       <View style={[styles.captureIcon, { backgroundColor: theme.colors.secondary }]}>
         <Icon name={icon} color={theme.colors.primary} />
       </View>
