@@ -1,31 +1,19 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '@/design/theme/ThemeContext';
 import { Button } from '@/design/components/Button';
 import { Card } from '@/design/components/Card';
 import { ProgressBar } from '@/design/components/ProgressBar';
+import { useAIModelStore } from '@/ai/AIModelManager';
 import { useRouter } from 'expo-router';
 
 export default function AIModelScreen() {
   const { theme } = useTheme();
   const router = useRouter();
-  const [downloadProgress, setDownloadProgress] = useState(0);
-  const [isDownloading, setIsDownloading] = useState(false);
+  const { state, progress, error, downloadModel } = useAIModelStore();
 
-  const handleDownload = () => {
-    setIsDownloading(true);
-    // Simulate download
-    let p = 0;
-    const interval = setInterval(() => {
-      p += 0.05;
-      setDownloadProgress(p);
-      if (p >= 1) {
-        clearInterval(interval);
-        setIsDownloading(false);
-        // router.replace('/(tabs)');
-      }
-    }, 200);
-  };
+  const isDownloading = state === 'DOWNLOADING';
+  const isReady = state === 'READY' || state === 'LOADED';
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -44,26 +32,40 @@ export default function AIModelScreen() {
 
         {isDownloading ? (
           <View style={styles.progressContainer}>
-            <ProgressBar progress={downloadProgress} />
+            <ProgressBar progress={progress} />
             <Text style={[styles.progressText, { color: theme.colors.textSecondary }]}>
-              {Math.round(downloadProgress * 100)}% downloaded
+              {Math.round(progress * 100)}% downloaded
             </Text>
           </View>
+        ) : isReady ? (
+          <View style={styles.readyContainer}>
+            <Text style={[styles.readyText, { color: theme.colors.success }]}>Model Ready!</Text>
+            <Button
+              title="Continue to App"
+              onPress={() => router.replace('/(tabs)')}
+              style={styles.button}
+            />
+          </View>
         ) : (
-          <Button
-            title="Download Model"
-            onPress={handleDownload}
-            style={styles.button}
-          />
+          <View>
+            <Button
+              title="Download Model"
+              onPress={downloadModel}
+              style={styles.button}
+            />
+            {error && <Text style={{ color: theme.colors.error, marginTop: 8 }}>{error}</Text>}
+          </View>
         )}
       </Card>
 
-      <Button
-        title="I'll do this later"
-        variant="ghost"
-        onPress={() => router.replace('/(tabs)')}
-        style={styles.skipButton}
-      />
+      {!isDownloading && !isReady && (
+        <Button
+          title="I'll do this later"
+          variant="ghost"
+          onPress={() => router.replace('/(tabs)')}
+          style={styles.skipButton}
+        />
+      )}
     </ScrollView>
   );
 }
@@ -78,6 +80,8 @@ const styles = StyleSheet.create({
   modelInfo: { fontSize: 14, marginBottom: 24 },
   progressContainer: { marginTop: 8 },
   progressText: { fontSize: 12, marginTop: 8, textAlign: 'center' },
-  button: { marginTop: 8 },
+  readyContainer: { alignItems: 'center' },
+  readyText: { fontWeight: 'bold', marginBottom: 16 },
+  button: { marginTop: 8, width: '100%' },
   skipButton: { marginTop: 16 },
 });
