@@ -1,4 +1,9 @@
-import 'react-native-gesture-handler/jest-setup';
+jest.mock('react-native-gesture-handler', () => ({}));
+jest.mock('react-native-reanimated', () => {
+  const Reanimated = require('react-native-reanimated/mock');
+  Reanimated.default.call = () => {};
+  return Reanimated;
+});
 
 jest.mock('expo-sqlite', () => ({
   openDatabaseAsync: jest.fn(async () => ({
@@ -19,6 +24,8 @@ jest.mock('expo-splash-screen', () => ({
   hideAsync: jest.fn(),
 }));
 
-jest.mock('@expo/vector-icons', () => ({
-  MaterialCommunityIcons: 'Icon',
-}));
+try {
+  jest.mock('@expo/vector-icons', () => ({
+    MaterialCommunityIcons: 'Icon',
+  }));
+} catch (e) {}
