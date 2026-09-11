@@ -1,21 +1,10 @@
 import { IAIProvider } from './interfaces/AIProvider';
 import { OpenRouterAdapter } from './adapters/OpenRouterAdapter';
+import { LocalAIProvider } from './adapters/LocalAIProvider';
 import { useSettingsStore } from '../features/settings/SettingsStore';
 
-// We will implement LocalAIProvider later during the spike
-// For now, it will throw if selected
-export class PlaceholderLocalAIProvider implements IAIProvider {
-  async generate() {
-    throw new Error('Local AI not yet implemented. Please download the model first.');
-    return { text: '' };
-  }
-  async streamGenerate() {
-    throw new Error('Local AI not yet implemented.');
-  }
-}
-
 const cloudProvider = new OpenRouterAdapter();
-const localProvider = new PlaceholderLocalAIProvider();
+const localProvider = new LocalAIProvider();
 
 export const getAIProvider = (): IAIProvider => {
   const { inferenceMode } = useSettingsStore.getState();

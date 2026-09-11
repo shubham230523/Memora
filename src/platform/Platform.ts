@@ -4,6 +4,7 @@ import { ExpoMicrophone } from './adapters/ExpoMicrophone';
 import { ExpoSecureStorage } from './adapters/ExpoSecureStorage';
 import { ExpoNotifications } from './adapters/ExpoNotifications';
 import { PlaceholderOCR } from './adapters/PlaceholderOCR';
+import { LlamaLocalAI } from './adapters/LlamaLocalAI';
 
 export const Platform = {
   FilePicker: new ExpoFilePicker(),
@@ -12,5 +13,6 @@ export const Platform = {
   SecureStorage: new ExpoSecureStorage(),
   Notifications: new ExpoNotifications(),
   OCR: new PlaceholderOCR(),
+  LocalAI: new LlamaLocalAI(),
 };
 
