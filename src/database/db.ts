@@ -112,6 +112,24 @@ export const initDb = async () => {
       error TEXT,
       createdAt TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS flashcards (
+      id TEXT PRIMARY KEY NOT NULL,
+      knowledgeItemId TEXT,
+      front TEXT NOT NULL,
+      back TEXT NOT NULL,
+      nextReviewAt TEXT,
+      interval INTEGER DEFAULT 0,
+      createdAt TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS quizzes (
+      id TEXT PRIMARY KEY NOT NULL,
+      title TEXT NOT NULL,
+      questions TEXT NOT NULL,
+      score REAL,
+      createdAt TEXT NOT NULL
+    );
   `);
 
   logger.info('Database initialized with core tables');
