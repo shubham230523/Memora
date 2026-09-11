@@ -28,7 +28,7 @@ export class KnowledgeRepository {
       params.push(`%${filter.search}%`, `%${filter.search}%`);
     }
 
-    query += ' ORDER BY updatedAt DESC';
+    query += ' ORDER BY isFavorite DESC, updatedAt DESC';
 
     const rows = await db.getAllAsync<any>(query, params);
     return rows.map(row => ({
