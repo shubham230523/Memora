@@ -1,15 +1,11 @@
 module.exports = {
-  preset: 'jest-expo',
-  transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg)',
-  ],
-  setupFilesAfterEnv: ['@testing-library/react-native/extend-expect'],
+  preset: 'react-native',
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  setupFilesAfterEnv: ['@testing-library/react-native/matchers'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
-  collectCoverage: true,
-  collectCoverageFrom: [
-    'src/**/*.{ts,tsx}',
-    '!src/**/*.d.ts',
+  transformIgnorePatterns: [
+    'node_modules/(?!(react-native|@react-native|expo|@expo|@testing-library)/)',
   ],
 };

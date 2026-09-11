@@ -10,10 +10,10 @@ const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const customRender = (
+const customRender = async (
   ui: ReactElement,
   options?: Omit<RenderOptions, 'wrapper'>
-) => render(ui, { wrapper: AllTheProviders, ...options });
+) => await render(ui, { wrapper: AllTheProviders, ...options });
 
 export * from '@testing-library/react-native';
 export { customRender as render };
