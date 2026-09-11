@@ -1,7 +1,7 @@
 import { OpenRouterAdapter } from '../adapters/OpenRouterAdapter';
 
 describe('OpenRouterAdapter', () => {
-  it('throws error if API key is missing', async () => {
+  it('throws error if API  key is missing', async () => {
     // Force missing API key by overriding config if necessary or just testing default
     const adapter = new OpenRouterAdapter();
     // Assuming no key in test environment
