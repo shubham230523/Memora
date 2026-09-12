@@ -24,20 +24,44 @@ class Logger {
     }
   }
 
-  private sanitize(data: any): any {
+  private sanitize(data: any, depth = 0): any {
+    if (depth > 3) return '[DEPTH_LIMIT]';
+
+    if (data instanceof Error) {
+      return {
+        name: data.name,
+        message: data.message,
+        stack: data.stack,
+      };
+    }
+
     if (typeof data !== 'object' || data === null) return data;
+
+    // Handle arrays
+    if (Array.isArray(data)) {
+      return data.slice(0, 5).map(item => this.sanitize(item, depth + 1));
+    }
 
     // Simple secret scrubbing
     const secretKeys = ['key', 'secret', 'token', 'password', 'auth'];
-    const sanitized = { ...data };
+    const sanitized: any = {};
 
-    Object.keys(sanitized).forEach(key => {
-      if (secretKeys.some(s => key.toLowerCase().includes(s))) {
-        sanitized[key] = '[REDACTED]';
-      } else if (typeof sanitized[key] === 'object') {
-        sanitized[key] = this.sanitize(sanitized[key]);
-      }
-    });
+    try {
+      Object.keys(data).forEach(key => {
+        if (secretKeys.some(s => key.toLowerCase().includes(s))) {
+          sanitized[key] = '[REDACTED]';
+        } else {
+          const value = data[key];
+          if (typeof value === 'object' && value !== null) {
+            sanitized[key] = this.sanitize(value, depth + 1);
+          } else {
+            sanitized[key] = value;
+          }
+        }
+      });
+    } catch (e) {
+      return '[UNSERIALIZABLE]';
+    }
 
     return sanitized;
   }

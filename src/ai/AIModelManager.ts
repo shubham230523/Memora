@@ -12,6 +12,9 @@ export type ModelState =
   | 'LOADED'
   | 'FAILED';
 
+const MODEL_URL = 'https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf';
+const MODEL_FILENAME = 'qwen2.5-1.5b-q4_k_m.gguf';
+
 interface AIModelStore {
   state: ModelState;
   progress: number; // 0 to 1
@@ -30,10 +33,16 @@ export const useAIModelStore = create<AIModelStore>()(
       error: null,
 
       checkStatus: async () => {
-        const currentState = get().state;
-        if (currentState === 'READY' || currentState === 'LOADED' || currentState === 'LOADING') {
-          // Try to load the model into memory
-          await get().loadModel();
+        const { state } = get();
+        const modelUri = `${Platform.FileSystem.documentDirectory}${MODEL_FILENAME}`;
+        const modelExists = await Platform.FileSystem.exists(modelUri);
+
+        if (modelExists) {
+          if (state !== 'LOADED' && state !== 'LOADING') {
+            set({ state: 'READY' });
+            // Auto-load if it exists but not loaded
+            await get().loadModel();
+          }
         } else {
           set({ state: 'NOT_INSTALLED' });
         }
@@ -45,9 +54,8 @@ export const useAIModelStore = create<AIModelStore>()(
 
         set({ state: 'LOADING' });
         try {
-          // Placeholder path - in a real app, this would be a path in FileSystem.documentDirectory
-          const modelPath = 'qwen-2.5-1.5b.gguf';
-          await Platform.LocalAI.loadModel(modelPath);
+          const modelUri = `${Platform.FileSystem.documentDirectory}${MODEL_FILENAME}`;
+          await Platform.LocalAI.loadModel(modelUri);
           set({ state: 'LOADED' });
           logger.info('AI Model loaded into memory');
         } catch (err: any) {
@@ -59,33 +67,39 @@ export const useAIModelStore = create<AIModelStore>()(
       downloadModel: async () => {
         if (get().state === 'DOWNLOADING') return;
 
+        const modelUri = `${Platform.FileSystem.documentDirectory}${MODEL_FILENAME}`;
+
         set({ state: 'DOWNLOADING', progress: 0, error: null });
 
         try {
-          logger.info('Starting model download...');
+          logger.info('Starting real model download...');
 
-          // Simulate progress
-          for (let i = 0; i <= 10; i++) {
-            await new Promise(r => setTimeout(() => r(undefined), 300));
-            set({ progress: i / 10 });
-          }
+          await Platform.FileSystem.downloadFile(
+            MODEL_URL,
+            modelUri,
+            (progress) => {
+              const p = progress.totalBytesWritten / progress.totalBytesExpectedToWrite;
+              set({ progress: p });
+            }
+          );
 
           set({ state: 'READY', progress: 1 });
           logger.info('Model download complete');
 
-          // Auto-load after download
           await get().loadModel();
         } catch (err: any) {
-          set({ state: 'FAILED', error: err.message });
+          set({ state: 'FAILED', error: `Download failed: ${err.message}` });
           logger.error('Model download failed', err);
         }
       },
 
       deleteModel: async () => {
         try {
+          const modelUri = `${Platform.FileSystem.documentDirectory}${MODEL_FILENAME}`;
           await Platform.LocalAI.unloadModel();
+          await Platform.FileSystem.deleteFile(modelUri);
         } catch (e) {
-          logger.error('Unload failed', e);
+          logger.error('Delete/Unload failed', e);
         }
         set({ state: 'NOT_INSTALLED', progress: 0 });
       }
