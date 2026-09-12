@@ -71,27 +71,50 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const aiProvider = getAIProvider();
       const systemPrompt = `You are Memora AI, a personal knowledge assistant. Use the following context to answer the user's question. If the answer is not in the context, use your general knowledge but mention it's not in their notes.\n\nContext:\n${context}`;
 
-      logger.info('[CHAT] Step 4: Generating AI response (this may take time for local models)');
+      logger.info('[CHAT] Step 4: Generating AI response (streaming)');
       const startTime = Date.now();
 
-      const response = await aiProvider.generate({
-        prompt: content,
-        systemPrompt,
-      });
-
-      const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-      logger.info(`[CHAT] AI generation complete in ${duration}s`);
-      logger.info(`[CHAT] AI Response: "${response.text.substring(0, 100)}${response.text.length > 100 ? '...' : ''}"`);
-
-      // 4. Save AI message
-      logger.debug('[CHAT] Step 5: Saving assistant response to database');
-      const assistantMsg = await chatRepository.addMessage({
+      // Add a placeholder assistant message that we will update with stream
+      const assistantMsgId = `assistant-${Date.now()}`;
+      const initialAssistantMsg: Message = {
+        id: assistantMsgId,
         conversationId: currentConversation.id,
         role: 'assistant',
-        content: response.text,
+        content: '',
+        createdAt: new Date().toISOString()
+      };
+
+      set(state => ({ messages: [...state.messages, initialAssistantMsg] }));
+
+      let fullContent = '';
+
+      await aiProvider.streamGenerate({
+        prompt: content,
+        systemPrompt,
+      }, (chunk) => {
+        if (chunk.isFinal) {
+          const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+          logger.info(`[CHAT] AI stream complete in ${duration}s`);
+          logger.info(`[CHAT] AI Response: "${fullContent.substring(0, 100)}..."`);
+
+          // Final save to database
+          chatRepository.addMessage({
+            conversationId: currentConversation.id,
+            role: 'assistant',
+            content: fullContent,
+          });
+
+          set({ isLoading: false });
+        } else {
+          fullContent += chunk.text;
+          set(state => ({
+            messages: state.messages.map(m =>
+              m.id === assistantMsgId ? { ...m, content: fullContent } : m
+            )
+          }));
+        }
       });
 
-      set(state => ({ messages: [...state.messages, assistantMsg], isLoading: false }));
       logger.info('[CHAT] Message flow complete');
     } catch (error: any) {
       logger.error('[CHAT] Chat flow failed at some step', error);

@@ -44,7 +44,7 @@ export default function SettingsScreen() {
                   color={isModelReady ? theme.colors.success : theme.colors.warning}
                 />
                 <View style={styles.modelNameContainer}>
-                  <Text style={[styles.modelName, { color: theme.colors.text }]}>Qwen 2.5 1.5B</Text>
+                  <Text style={[styles.modelName, { color: theme.colors.text }]}>Qwen 2.5 0.5B</Text>
                   <Text style={[styles.modelStatus, { color: theme.colors.textSecondary }]}>
                     {isModelReady ? 'Downloaded & Ready' : 'Not Downloaded'}
                   </Text>
