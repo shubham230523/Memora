@@ -6,6 +6,7 @@ import { useTheme } from '@/design/theme/ThemeContext';
 import { useChatStore } from '@/features/chat/ChatStore';
 import { useAIModelStore } from '@/ai/AIModelManager';
 import { useSettingsStore } from '@/features/settings/SettingsStore';
+import { logger } from '@/core/logging/Logger';
 import { TextInput } from '@/design/components/TextInput';
 import { Button } from '@/design/components/Button';
 import { Card } from '@/design/components/Card';
@@ -21,17 +22,24 @@ export default function ChatScreen() {
 
   const isLocalMode = inferenceMode === 'LOCAL';
   const isModelLoading = modelState === 'LOADING';
-  const isModelReady = modelState === 'LOADED' || modelState === 'READY';
+  const isModelLoaded = modelState === 'LOADED';
+  const isModelOnDisk = modelState === 'READY' || modelState === 'LOADED';
   const needsSetup = isLocalMode && (modelState === 'NOT_INSTALLED' || modelState === 'FAILED');
 
   useEffect(() => {
+    logger.info('ChatScreen mounted');
     if (!currentConversation) {
       startNewChat();
     }
-  }, [currentConversation, startNewChat]);
+
+    // Lazy load the model when the user enters the chat screen
+    if (isLocalMode && !isModelLoaded && !isModelLoading && isModelOnDisk) {
+      loadModel();
+    }
+  }, [currentConversation, startNewChat, isLocalMode, isModelLoaded, isModelLoading, isModelOnDisk, loadModel]);
 
   const handleSend = () => {
-    if (!inputText.trim() || isSending || (isLocalMode && !isModelReady)) return;
+    if (!inputText.trim() || isSending || (isLocalMode && !isModelLoaded)) return;
     sendMessage(inputText);
     setInputText('');
   };
@@ -69,7 +77,7 @@ export default function ChatScreen() {
 
         {isLocalMode && (
           <View style={[styles.statusBanner, { backgroundColor: theme.colors.surface }]}>
-            {isModelLoading ? (
+            {(isModelLoading || (isModelOnDisk && !isModelLoaded)) ? (
               <View style={styles.bannerContent}>
                 <ActivityIndicator size="small" color={theme.colors.primary} />
                 <Text style={[styles.statusText, { color: theme.colors.textSecondary }]}>Loading local AI model...</Text>
@@ -86,19 +94,19 @@ export default function ChatScreen() {
 
         <View style={[styles.inputArea, { backgroundColor: theme.colors.surface, borderTopColor: theme.colors.border }]}>
           <TextInput
-            placeholder={needsSetup ? "AI Setup Required" : "Ask Memora about your knowledge..."}
+            placeholder={needsSetup ? "AI Setup Required" : !isModelLoaded ? "Waiting for AI model..." : "Ask Memora about your knowledge..."}
             value={inputText}
             onChangeText={setInputText}
             containerStyle={styles.textInputContainer}
             style={styles.textInput}
             multiline
-            editable={!needsSetup && !isModelLoading}
+            editable={!needsSetup && isModelLoaded}
           />
           <Button
             title="Send"
             onPress={handleSend}
             loading={isSending}
-            disabled={!inputText.trim() || needsSetup || isModelLoading}
+            disabled={!inputText.trim() || needsSetup || !isModelLoaded}
             style={styles.sendButton}
           />
         </View>

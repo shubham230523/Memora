@@ -34,9 +34,9 @@ export class LlamaLocalAI implements ILocalAIProvider {
 
       this.context = await initLlama({
         model: formattedPath,
-        use_mlock: true,
-        n_ctx: 2048,
-        n_gpu_layers: 1,
+        use_mlock: false, // Set to false to prevent OOM on mid-range devices
+        n_ctx: 1024,      // Reduced context size for lower memory footprint
+        n_gpu_layers: 0,  // Disable GPU offloading for stability on shared RAM devices
       });
       logger.info('Local model loaded');
     } catch (error) {
@@ -62,19 +62,27 @@ export class LlamaLocalAI implements ILocalAIProvider {
 
     if (!this.context) throw new Error('Model not loaded');
 
+    // Qwen/Llama Chat Template
+    const fullPrompt = `<|im_start|>system
+${request.systemPrompt || 'You are a helpful assistant.'}<|im_end|>
+<|im_start|>user
+${request.prompt}<|im_end|>
+<|im_start|>assistant`;
+
     let result = '';
     await this.context.completion(
       {
-        prompt: request.prompt,
-        n_predict: 512,
+        prompt: fullPrompt,
+        n_predict: 256, // Reduced for faster response
         temperature: request.temperature || 0.7,
+        stop: ['<|im_end|>', '<|endoftext|>'],
       },
       (data: any) => {
         result += data.token;
       }
     );
 
-    return { text: result };
+    return { text: result.trim() };
   }
 
   async streamGenerate(request: AIRequest, onChunk: (chunk: AIStreamChunk) => void): Promise<void> {
@@ -90,11 +98,18 @@ export class LlamaLocalAI implements ILocalAIProvider {
 
     if (!this.context) throw new Error('Model not loaded');
 
+    const fullPrompt = `<|im_start|>system
+${request.systemPrompt || 'You are a helpful assistant.'}<|im_end|>
+<|im_start|>user
+${request.prompt}<|im_end|>
+<|im_start|>assistant`;
+
     await this.context.completion(
       {
-        prompt: request.prompt,
-        n_predict: 512,
+        prompt: fullPrompt,
+        n_predict: 256,
         temperature: request.temperature || 0.7,
+        stop: ['<|im_end|>', '<|endoftext|>'],
       },
       (data: any) => {
         onChunk({ text: data.token, isFinal: false });

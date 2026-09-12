@@ -24,8 +24,14 @@ export class KnowledgeRepository {
     }
 
     if (filter.search) {
-      query += ' AND (title LIKE ? OR content LIKE ?)';
-      params.push(`%${filter.search}%`, `%${filter.search}%`);
+      const searchWords = filter.search.split(' ').filter(w => w.length > 0);
+      if (searchWords.length > 0) {
+        const searchConditions = searchWords.map(() => '(title LIKE ? OR content LIKE ?)').join(' OR ');
+        query += ` AND (${searchConditions})`;
+        searchWords.forEach(word => {
+          params.push(`%${word}%`, `%${word}%`);
+        });
+      }
     }
 
     query += ' ORDER BY isFavorite DESC, updatedAt DESC';

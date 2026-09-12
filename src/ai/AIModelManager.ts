@@ -33,16 +33,11 @@ export const useAIModelStore = create<AIModelStore>()(
       error: null,
 
       checkStatus: async () => {
-        const { state } = get();
         const modelUri = `${Platform.FileSystem.documentDirectory}${MODEL_FILENAME}`;
         const modelExists = await Platform.FileSystem.exists(modelUri);
 
         if (modelExists) {
-          if (state !== 'LOADED' && state !== 'LOADING') {
-            set({ state: 'READY' });
-            // Auto-load if it exists but not loaded
-            await get().loadModel();
-          }
+          set({ state: 'READY' });
         } else {
           set({ state: 'NOT_INSTALLED' });
         }

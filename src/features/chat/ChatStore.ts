@@ -30,11 +30,17 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   sendMessage: async (content) => {
     const { currentConversation } = get();
-    if (!currentConversation) return;
+    if (!currentConversation) {
+      logger.warn('Cannot send message: no active conversation');
+      return;
+    }
 
+    logger.info(`[CHAT] Start processing message: "${content.substring(0, 50)}..."`);
     set({ isLoading: true });
+
     try {
       // 1. Save user message
+      logger.debug('[CHAT] Step 1: Saving user message to database');
       const userMsg = await chatRepository.addMessage({
         conversationId: currentConversation.id,
         role: 'user',
@@ -43,27 +49,52 @@ export const useChatStore = create<ChatState>((set, get) => ({
       set(state => ({ messages: [...state.messages, userMsg] }));
 
       // 2. Retrieval (RAG)
-      const relevantKnowledge = await knowledgeRepository.getAll({ search: content });
+      logger.debug('[CHAT] Step 2: Retrieving relevant context from knowledge base');
+
+      // Simple Keyword Extraction: Remove common words and split
+      const stopWords = ['what', 'is', 'my', 'the', 'a', 'an', 'and', 'or', 'but', 'how', 'who', 'where'];
+      const keywords = content.toLowerCase()
+        .replace(/[?.,!]/g, '')
+        .split(' ')
+        .filter(word => word.length > 2 && !stopWords.includes(word));
+
+      const searchTerms = keywords.length > 0 ? keywords.join(' ') : content;
+      logger.info(`[CHAT] Searching for context using terms: "${searchTerms}"`);
+
+      const relevantKnowledge = await knowledgeRepository.getAll({ search: searchTerms });
+      logger.info(`[CHAT] Found ${relevantKnowledge.length} relevant knowledge items`);
+
       const context = relevantKnowledge.map(k => `Source: ${k.title}\nContent: ${k.content}`).join('\n\n');
 
       // 3. AI Generation
+      logger.debug('[CHAT] Step 3: Initializing AI provider');
       const aiProvider = getAIProvider();
       const systemPrompt = `You are Memora AI, a personal knowledge assistant. Use the following context to answer the user's question. If the answer is not in the context, use your general knowledge but mention it's not in their notes.\n\nContext:\n${context}`;
+
+      logger.info('[CHAT] Step 4: Generating AI response (this may take time for local models)');
+      const startTime = Date.now();
 
       const response = await aiProvider.generate({
         prompt: content,
         systemPrompt,
       });
 
+      const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+      logger.info(`[CHAT] AI generation complete in ${duration}s`);
+      logger.info(`[CHAT] AI Response: "${response.text.substring(0, 100)}${response.text.length > 100 ? '...' : ''}"`);
+
       // 4. Save AI message
+      logger.debug('[CHAT] Step 5: Saving assistant response to database');
       const assistantMsg = await chatRepository.addMessage({
         conversationId: currentConversation.id,
         role: 'assistant',
         content: response.text,
       });
+
       set(state => ({ messages: [...state.messages, assistantMsg], isLoading: false }));
+      logger.info('[CHAT] Message flow complete');
     } catch (error: any) {
-      logger.error('Chat message processing failed', error);
+      logger.error('[CHAT] Chat flow failed at some step', error);
 
       // Add error message to chat so user knows what happened
       const errorMsg: Message = {
