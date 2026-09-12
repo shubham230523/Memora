@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '@/design/theme/ThemeContext';
 import { Button } from '@/design/components/Button';
 import { Card } from '@/design/components/Card';
@@ -8,7 +9,7 @@ import { useAIModelStore } from '@/ai/AIModelManager';
 import { useRouter } from 'expo-router';
 
 export default function AIModelScreen() {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { state, progress, error, downloadModel } = useAIModelStore();
@@ -18,6 +19,7 @@ export default function AIModelScreen() {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <View style={[styles.header, { paddingTop: insets.top + 32 }]}>
         <Text style={[styles.title, { color: theme.colors.text }]}>AI Model Setup</Text>
         <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
