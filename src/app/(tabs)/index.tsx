@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, RefreshControl, Alert, Linking } fr
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '@/design/theme/ThemeContext';
 import { Card } from '@/design/components/Card';
 import { useHomeStore } from '@/features/home/HomeStore';
@@ -13,7 +14,7 @@ import { knowledgePipeline } from '@/features/knowledge/KnowledgePipeline';
 import { logger } from '@/core/logging/Logger';
 
 export default function HomeScreen() {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { stats, recentItems, isLoading, fetchHomeData } = useHomeStore();
@@ -68,6 +69,7 @@ export default function HomeScreen() {
         <RefreshControl refreshing={isLoading} onRefresh={fetchHomeData} />
       }
     >
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <View style={[styles.header, { paddingTop: insets.top + 24 }]}>
         <Text style={[styles.greeting, { color: theme.colors.textSecondary }]}>Hello,</Text>
         <Text style={[styles.title, { color: theme.colors.text }]}>Your Knowledge</Text>

@@ -48,7 +48,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
       // 3. AI Generation
       const aiProvider = getAIProvider();
-      const systemPrompt = `You are Memora AI. Use the following knowledge to answer: \n\n${context}`;
+      const systemPrompt = `You are Memora AI, a personal knowledge assistant. Use the following context to answer the user's question. If the answer is not in the context, use your general knowledge but mention it's not in their notes.\n\nContext:\n${context}`;
+
       const response = await aiProvider.generate({
         prompt: content,
         systemPrompt,
@@ -61,9 +62,22 @@ export const useChatStore = create<ChatState>((set, get) => ({
         content: response.text,
       });
       set(state => ({ messages: [...state.messages, assistantMsg], isLoading: false }));
-    } catch (error) {
-      logger.error('Chat failed', error);
-      set({ isLoading: false });
+    } catch (error: any) {
+      logger.error('Chat message processing failed', error);
+
+      // Add error message to chat so user knows what happened
+      const errorMsg: Message = {
+        id: `error-${Date.now()}`,
+        conversationId: currentConversation.id,
+        role: 'assistant',
+        content: `Sorry, I encountered an error: ${error.message || 'Unknown error'}. If you're using Local AI, make sure the model is setup in Settings.`,
+        createdAt: new Date().toISOString()
+      };
+
+      set(state => ({
+        messages: [...state.messages, errorMsg],
+        isLoading: false
+      }));
     }
   },
 }));

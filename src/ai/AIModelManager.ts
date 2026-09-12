@@ -18,6 +18,7 @@ interface AIModelStore {
   error: string | null;
   checkStatus: () => Promise<void>;
   downloadModel: () => Promise<void>;
+  loadModel: () => Promise<void>;
   deleteModel: () => Promise<void>;
 }
 
@@ -30,12 +31,28 @@ export const useAIModelStore = create<AIModelStore>()(
 
       checkStatus: async () => {
         const currentState = get().state;
-        // If it was already ready, keep it ready.
-        // In a real app, you might check if the file still exists on disk here.
-        if (currentState === 'READY' || currentState === 'LOADED') {
-          set({ state: currentState });
+        if (currentState === 'READY' || currentState === 'LOADED' || currentState === 'LOADING') {
+          // Try to load the model into memory
+          await get().loadModel();
         } else {
           set({ state: 'NOT_INSTALLED' });
+        }
+      },
+
+      loadModel: async () => {
+        const { state } = get();
+        if (state === 'LOADED' || state === 'LOADING') return;
+
+        set({ state: 'LOADING' });
+        try {
+          // Placeholder path - in a real app, this would be a path in FileSystem.documentDirectory
+          const modelPath = 'qwen-2.5-1.5b.gguf';
+          await Platform.LocalAI.loadModel(modelPath);
+          set({ state: 'LOADED' });
+          logger.info('AI Model loaded into memory');
+        } catch (err: any) {
+          logger.error('Failed to load AI model', err);
+          set({ state: 'FAILED', error: `Load failed: ${err.message}` });
         }
       },
 
@@ -49,12 +66,15 @@ export const useAIModelStore = create<AIModelStore>()(
 
           // Simulate progress
           for (let i = 0; i <= 10; i++) {
-            await new Promise(r => setTimeout(() => r(undefined), 500));
+            await new Promise(r => setTimeout(() => r(undefined), 300));
             set({ progress: i / 10 });
           }
 
           set({ state: 'READY', progress: 1 });
           logger.info('Model download complete');
+
+          // Auto-load after download
+          await get().loadModel();
         } catch (err: any) {
           set({ state: 'FAILED', error: err.message });
           logger.error('Model download failed', err);
@@ -62,6 +82,11 @@ export const useAIModelStore = create<AIModelStore>()(
       },
 
       deleteModel: async () => {
+        try {
+          await Platform.LocalAI.unloadModel();
+        } catch (e) {
+          logger.error('Unload failed', e);
+        }
         set({ state: 'NOT_INSTALLED', progress: 0 });
       }
     }),

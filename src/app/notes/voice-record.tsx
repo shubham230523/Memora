@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '@/design/theme/ThemeContext';
 import { Icon } from '@/design/components/Icon';
 import { Platform } from '@/platform/Platform';
@@ -9,7 +10,7 @@ import { knowledgePipeline } from '@/features/knowledge/KnowledgePipeline';
 import { logger } from '@/core/logging/Logger';
 
 export default function VoiceRecordScreen() {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [isRecording, setIsRecording] = useState(false);
@@ -67,6 +68,7 @@ export default function VoiceRecordScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background, paddingTop: insets.top }]}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}>
           <Icon name="close" size={28} color={theme.colors.text} />

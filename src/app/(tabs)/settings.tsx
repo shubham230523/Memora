@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, Switch, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '@/design/theme/ThemeContext';
 import { useSettingsStore } from '@/features/settings/SettingsStore';
 import { useAIModelStore } from '@/ai/AIModelManager';
@@ -7,7 +8,7 @@ import { Card } from '@/design/components/Card';
 import { Icon } from '@/design/components/Icon';
 
 export default function SettingsScreen() {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const router = useRouter();
   const { inferenceMode, setInferenceMode } = useSettingsStore();
   const { state, deleteModel } = useAIModelStore();
@@ -16,6 +17,7 @@ export default function SettingsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>AI Configuration</Text>
         <Card style={styles.settingCard}>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '@/design/theme/ThemeContext';
 import { TextInput } from '@/design/components/TextInput';
 import { Button } from '@/design/components/Button';
@@ -9,7 +10,7 @@ import { noteRepository } from '@/features/notes/NoteRepository';
 import { logger } from '@/core/logging/Logger';
 
 export default function CreateNoteScreen() {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [title, setTitle] = useState('');
@@ -31,6 +32,7 @@ export default function CreateNoteScreen() {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <View style={[styles.form, { paddingTop: insets.top + 24 }]}>
         <TextInput
           label="Title"

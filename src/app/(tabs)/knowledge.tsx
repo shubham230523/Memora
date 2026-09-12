@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '@/design/theme/ThemeContext';
 import { useKnowledgeStore } from '@/features/knowledge/KnowledgeStore';
 import { Card } from '@/design/components/Card';
@@ -9,7 +10,7 @@ import { EmptyState } from '@/design/components/EmptyState';
 import { Loading } from '@/design/components/Loading';
 
 export default function KnowledgeScreen() {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const { items, isLoading, fetchItems, toggleFavorite } = useKnowledgeStore();
 
@@ -23,6 +24,7 @@ export default function KnowledgeScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <FlatList
         data={items}
         keyExtractor={(item) => item.id}

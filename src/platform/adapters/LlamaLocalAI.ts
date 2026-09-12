@@ -12,13 +12,19 @@ try {
 
 export class LlamaLocalAI implements ILocalAIProvider {
   private context: any = null;
+  private isMock: boolean = false;
 
   async isModelReady(): Promise<boolean> {
-    return this.context !== null;
+    return this.context !== null || this.isMock;
   }
 
   async loadModel(modelPath: string): Promise<void> {
-    if (!initLlama) throw new Error('Local AI runtime not available');
+    if (!initLlama) {
+      logger.warn('Native Local AI runtime not found. Enabling Mock Mode for UI testing.');
+      this.isMock = true;
+      return;
+    }
+
     if (this.context) return;
 
     try {
@@ -39,11 +45,17 @@ export class LlamaLocalAI implements ILocalAIProvider {
     if (this.context) {
       await this.context.release();
       this.context = null;
-      logger.info('Local model unloaded');
     }
+    this.isMock = false;
+    logger.info('Local model unloaded');
   }
 
   async generate(request: AIRequest): Promise<AIResponse> {
+    if (this.isMock) {
+      await new Promise(r => setTimeout(r, 1500)); // Simulate think time
+      return { text: "I'm running in mock mode because the native llama.rn library is missing. Please create a development build to use real local AI!" };
+    }
+
     if (!this.context) throw new Error('Model not loaded');
 
     let result = '';
@@ -62,6 +74,16 @@ export class LlamaLocalAI implements ILocalAIProvider {
   }
 
   async streamGenerate(request: AIRequest, onChunk: (chunk: AIStreamChunk) => void): Promise<void> {
+    if (this.isMock) {
+      const text = "I'm running in mock mode. Real AI requires a development build.";
+      for (const char of text.split(' ')) {
+        await new Promise(r => setTimeout(r, 50));
+        onChunk({ text: char + ' ', isFinal: false });
+      }
+      onChunk({ text: '', isFinal: true });
+      return;
+    }
+
     if (!this.context) throw new Error('Model not loaded');
 
     await this.context.completion(
