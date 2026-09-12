@@ -14,8 +14,19 @@ export class ExpoCamera implements ICameraProvider {
       logger.error('ImagePicker module is missing');
       return false;
     }
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    return status === 'granted';
+
+    try {
+      // Check current status first
+      const current = await ImagePicker.getCameraPermissionsAsync();
+      if (current.granted) return true;
+
+      // If not granted, request it
+      const { status, granted } = await ImagePicker.requestCameraPermissionsAsync();
+      return granted || status === 'granted';
+    } catch (error) {
+      logger.error('Failed to request camera permissions', error);
+      return false;
+    }
   }
 
   async takePhoto(): Promise<CameraCaptureResult | null> {

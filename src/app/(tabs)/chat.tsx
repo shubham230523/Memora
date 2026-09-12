@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, KeyboardAvoidingView, Platform as RNPlatform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/design/theme/ThemeContext';
 import { useChatStore } from '@/features/chat/ChatStore';
 import { TextInput } from '@/design/components/TextInput';
@@ -8,6 +9,7 @@ import { Card } from '@/design/components/Card';
 
 export default function ChatScreen() {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   const { currentConversation, messages, isLoading, startNewChat, sendMessage } = useChatStore();
   const [inputText, setInputText] = useState('');
 
@@ -32,7 +34,7 @@ export default function ChatScreen() {
       <FlatList
         data={messages}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.messageList}
+        contentContainerStyle={[styles.messageList, { paddingTop: insets.top + 16 }]}
         renderItem={({ item }) => (
           <View style={[
             styles.messageContainer,
@@ -55,6 +57,7 @@ export default function ChatScreen() {
           placeholder="Ask Memora about your knowledge..."
           value={inputText}
           onChangeText={setInputText}
+          containerStyle={styles.textInputContainer}
           style={styles.textInput}
           multiline
         />
@@ -77,7 +80,15 @@ const styles = StyleSheet.create({
   userMessage: { alignSelf: 'flex-end' },
   assistantMessage: { alignSelf: 'flex-start' },
   messageCard: { padding: 12, borderRadius: 16 },
-  inputArea: { padding: 16, borderTopWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  textInput: { flex: 1, marginBottom: 0 },
+  inputArea: {
+    padding: 16,
+    paddingBottom: RNPlatform.OS === 'ios' ? 32 : 16,
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 12
+  },
+  textInputContainer: { flex: 1, marginBottom: 0 },
+  textInput: { maxHeight: 120, paddingTop: 10, paddingBottom: 10 },
   sendButton: { paddingVertical: 10 },
 });

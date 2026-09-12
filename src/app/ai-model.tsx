@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/design/theme/ThemeContext';
 import { Button } from '@/design/components/Button';
 import { Card } from '@/design/components/Card';
@@ -9,6 +10,7 @@ import { useRouter } from 'expo-router';
 export default function AIModelScreen() {
   const { theme } = useTheme();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { state, progress, error, downloadModel } = useAIModelStore();
 
   const isDownloading = state === 'DOWNLOADING';
@@ -16,7 +18,7 @@ export default function AIModelScreen() {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 32 }]}>
         <Text style={[styles.title, { color: theme.colors.text }]}>AI Model Setup</Text>
         <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
           Memora uses a local AI model for privacy and offline use.
@@ -71,7 +73,7 @@ export default function AIModelScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { padding: 32, alignItems: 'center' },
+  header: { paddingHorizontal: 32, paddingBottom: 32, alignItems: 'center' },
   title: { fontSize: 24, fontWeight: 'bold', marginBottom: 8 },
   subtitle: { fontSize: 16, textAlign: 'center', lineHeight: 24 },
   modelCard: { margin: 24, padding: 24 },

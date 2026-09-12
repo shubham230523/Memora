@@ -1,12 +1,17 @@
 import { IMicrophoneProvider } from '../interfaces/Microphone';
 import { logger } from '../../core/logging/Logger';
 
-// Safely require expo-av to prevent crash if native module is missing
+// Safely require audio module to prevent crash if native module is missing
+// SDK 57 uses expo-audio, older SDKs use expo-av
 let Audio: any;
 try {
-  Audio = require('expo-av').Audio;
+  Audio = require('expo-audio').Audio;
 } catch (e) {
-  logger.warn('expo-av not found or native module missing');
+  try {
+    Audio = require('expo-av').Audio;
+  } catch (e2) {
+    logger.warn('Audio module (expo-audio or expo-av) not found or native module missing');
+  }
 }
 
 export class ExpoMicrophone implements IMicrophoneProvider {
@@ -14,8 +19,19 @@ export class ExpoMicrophone implements IMicrophoneProvider {
 
   async requestPermissions(): Promise<boolean> {
     if (!Audio) return false;
-    const { status } = await Audio.requestPermissionsAsync();
-    return status === 'granted';
+
+    try {
+      // Check current status first
+      const current = await Audio.getPermissionsAsync();
+      if (current.granted) return true;
+
+      // If not granted, request it
+      const { status, granted } = await Audio.requestPermissionsAsync();
+      return granted || status === 'granted';
+    } catch (error) {
+      logger.error('Failed to request microphone permissions', error);
+      return false;
+    }
   }
 
   async startRecording(): Promise<void> {

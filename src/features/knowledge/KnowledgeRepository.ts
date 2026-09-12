@@ -38,6 +38,46 @@ export class KnowledgeRepository {
     }));
   }
 
+  async getStats(): Promise<{ totalItems: number; itemsThisWeek: number; knowledgeGaps: number }> {
+    const db = await getDb();
+
+    // Total items
+    const totalResult = await db.getFirstAsync<{ count: number }>('SELECT COUNT(*) as count FROM knowledge_items');
+
+    // Items this week
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const weekResult = await db.getFirstAsync<{ count: number }>(
+      'SELECT COUNT(*) as count FROM knowledge_items WHERE createdAt > ?',
+      [weekAgo.toISOString()]
+    );
+
+    // Knowledge gaps (placeholder logic: items without content or specific metadata)
+    const gapsResult = await db.getFirstAsync<{ count: number }>(
+      'SELECT COUNT(*) as count FROM knowledge_items WHERE content = "" OR content IS NULL'
+    );
+
+    return {
+      totalItems: totalResult?.count || 0,
+      itemsThisWeek: weekResult?.count || 0,
+      knowledgeGaps: gapsResult?.count || 0,
+    };
+  }
+
+  async getRecent(limit: number = 5): Promise<KnowledgeItem[]> {
+    const db = await getDb();
+    const rows = await db.getAllAsync<any>(
+      'SELECT * FROM knowledge_items ORDER BY createdAt DESC LIMIT ?',
+      [limit]
+    );
+
+    return rows.map(row => ({
+      ...row,
+      isFavorite: !!row.isFavorite,
+      metadata: row.metadata ? JSON.parse(row.metadata) : undefined,
+    }));
+  }
+
   async toggleFavorite(id: string, isFavorite: boolean): Promise<void> {
     const db = await getDb();
     await db.runAsync(

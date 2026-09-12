@@ -1,6 +1,8 @@
-import { useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, Alert, Linking } from 'react-native';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/design/theme/ThemeContext';
 import { Card } from '@/design/components/Card';
 import { useHomeStore } from '@/features/home/HomeStore';
@@ -8,15 +10,56 @@ import { Icon } from '@/design/components/Icon';
 import { EmptyState } from '@/design/components/EmptyState';
 import { Platform } from '@/platform/Platform';
 import { knowledgePipeline } from '@/features/knowledge/KnowledgePipeline';
+import { logger } from '@/core/logging/Logger';
 
 export default function HomeScreen() {
   const { theme } = useTheme();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { stats, recentItems, isLoading, fetchHomeData } = useHomeStore();
 
-  useEffect(() => {
-    fetchHomeData();
-  }, [fetchHomeData]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchHomeData();
+    }, [fetchHomeData])
+  );
+
+  const handleCapture = async (type: 'PDF' | 'IMAGE' | 'VOICE') => {
+    try {
+      if (type === 'PDF') {
+        const res = await Platform.FilePicker.pickDocument({ type: 'application/pdf' });
+        if (res) {
+          await knowledgePipeline.ingestPDF(res.uri, res.name);
+          await fetchHomeData();
+          Alert.alert('Success', 'PDF ingested successfully');
+        }
+      } else if (type === 'IMAGE') {
+        const hasPermission = await Platform.Camera.requestPermissions();
+        if (!hasPermission) {
+          Alert.alert(
+            'Permission Denied',
+            'Camera access is required to scan documents. Please enable it in settings.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Settings', onPress: () => Linking.openSettings() }
+            ]
+          );
+          return;
+        }
+        const res = await Platform.Camera.takePhoto();
+        if (res) {
+          await knowledgePipeline.ingestImage(res.uri);
+          await fetchHomeData();
+          Alert.alert('Success', 'Image processed via OCR');
+        }
+      } else if (type === 'VOICE') {
+        router.push('/notes/voice-record');
+      }
+    } catch (error) {
+      logger.error(`Failed to capture ${type}`, error);
+      Alert.alert('Error', `Failed to process ${type.toLowerCase()}`);
+    }
+  };
 
   return (
     <ScrollView
@@ -25,7 +68,7 @@ export default function HomeScreen() {
         <RefreshControl refreshing={isLoading} onRefresh={fetchHomeData} />
       }
     >
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 24 }]}>
         <Text style={[styles.greeting, { color: theme.colors.textSecondary }]}>Hello,</Text>
         <Text style={[styles.title, { color: theme.colors.text }]}>Your Knowledge</Text>
       </View>
@@ -60,23 +103,17 @@ export default function HomeScreen() {
           <CaptureButton
             icon="file-pdf-box"
             label="PDF"
-            onPress={async () => {
-              const res = await Platform.FilePicker.pickDocument({ type: 'application/pdf' });
-              if (res) await knowledgePipeline.ingestPDF(res.uri, res.name);
-            }}
+            onPress={() => handleCapture('PDF')}
           />
           <CaptureButton
             icon="camera"
             label="Scan"
-            onPress={async () => {
-              const res = await Platform.Camera.takePhoto();
-              if (res) await knowledgePipeline.ingestImage(res.uri);
-            }}
+            onPress={() => handleCapture('IMAGE')}
           />
           <CaptureButton
             icon="microphone"
             label="Voice"
-            onPress={() => {}}
+            onPress={() => handleCapture('VOICE')}
           />
         </View>
       </View>
@@ -92,13 +129,29 @@ export default function HomeScreen() {
         ) : (
           recentItems.map(item => (
             <Card key={item.id} style={styles.itemCard}>
-              <Text>{item.title}</Text>
+              <View style={styles.recentItemRow}>
+                <Icon name={getIconForType(item.type)} size={20} color={theme.colors.primary} />
+                <Text style={[styles.itemTitle, { color: theme.colors.text }]} numberOfLines={1}>
+                  {item.title}
+                </Text>
+              </View>
             </Card>
           ))
         )}
       </View>
     </ScrollView>
   );
+}
+
+function getIconForType(type: string): any {
+  switch (type) {
+    case 'NOTE': return 'note-text';
+    case 'PDF': return 'file-pdf-box';
+    case 'IMAGE': return 'image';
+    case 'VOICE': return 'microphone';
+    case 'WEBPAGE': return 'web';
+    default: return 'file-question';
+  }
 }
 
 const StatCard = ({ label, value, icon, color }: any) => {
@@ -124,11 +177,9 @@ const CaptureButton = ({ icon, label, onPress }: any) => {
   );
 };
 
-import { TouchableOpacity } from 'react-native-gesture-handler';
-
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { padding: 24, paddingTop: 40 },
+  header: { padding: 24 },
   greeting: { fontSize: 16, fontWeight: '500' },
   title: { fontSize: 28, fontWeight: 'bold', marginTop: 4 },
   statsContainer: {
@@ -154,5 +205,7 @@ const styles = StyleSheet.create({
   },
   captureLabel: { fontSize: 12, fontWeight: '500' },
   itemCard: { marginBottom: 12 },
+  recentItemRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 4 },
+  itemTitle: { fontSize: 16, flex: 1 },
   empty: { paddingVertical: 40 },
 });

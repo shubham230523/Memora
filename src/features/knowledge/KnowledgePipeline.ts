@@ -5,12 +5,13 @@ import { noteRepository } from '../notes/NoteRepository';
 import { chunkRepository } from './ChunkRepository';
 import { logger } from '../../core/logging/Logger';
 import { Platform } from '../../platform/Platform';
+import { KnowledgeType } from './models/KnowledgeItem';
 
 export class KnowledgePipeline {
   async ingestPDF(uri: string, name: string): Promise<void> {
     try {
       const text = await pdfProcessor.process(uri);
-      const note = await noteRepository.create(`PDF: ${name}`, text);
+      const note = await noteRepository.create(`PDF: ${name}`, text, KnowledgeType.PDF);
 
       // Document chunking (MVP requirement 9)
       const chunks = this.chunkText(text, 500); // 500 chars chunks for MVP
@@ -38,7 +39,7 @@ export class KnowledgePipeline {
   async ingestImage(uri: string): Promise<void> {
     try {
       const text = await Platform.OCR.recognizeText(uri);
-      await noteRepository.create('OCR Result', text);
+      await noteRepository.create('OCR Result', text, KnowledgeType.IMAGE);
       logger.info('Successfully ingested Image via OCR');
     } catch (error) {
       logger.error('Failed to ingest image', error);
@@ -49,7 +50,7 @@ export class KnowledgePipeline {
   async ingestVoice(uri: string): Promise<void> {
     try {
       const text = await voiceProcessor.transcribe(uri);
-      await noteRepository.create('Voice Note', text);
+      await noteRepository.create('Voice Note', text, KnowledgeType.VOICE);
       logger.info('Successfully ingested Voice Note');
     } catch (error) {
       logger.error('Failed to ingest voice', error);
@@ -61,7 +62,7 @@ export class KnowledgePipeline {
     try {
       const text = await webProcessor.process(url);
       const metadata = await webProcessor.extractMetadata(url);
-      await noteRepository.create(`Web: ${metadata.title}`, text);
+      await noteRepository.create(`Web: ${metadata.title}`, text, KnowledgeType.WEBPAGE);
       logger.info(`Successfully ingested Webpage: ${url}`);
     } catch (error) {
       logger.error(`Failed to ingest webpage: ${url}`, error);

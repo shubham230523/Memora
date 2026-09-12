@@ -4,14 +4,14 @@ import { KnowledgeType } from '../knowledge/models/KnowledgeItem';
 import { generateId } from '../../shared/utils/id';
 
 export class NoteRepository {
-  async create(title: string, content: string): Promise<Note> {
+  async create(title: string, content: string, type: KnowledgeType = KnowledgeType.NOTE): Promise<Note> {
     const db = await getDb();
     const id = generateId();
     const now = new Date().toISOString();
 
     const note: Note = {
       id,
-      type: KnowledgeType.NOTE,
+      type,
       title,
       content,
       isFavorite: false,

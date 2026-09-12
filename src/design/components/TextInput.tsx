@@ -25,6 +25,7 @@ export const TextInput: React.FC<TextInputProps> = ({
   error,
   containerStyle,
   inputStyle,
+  style,
   ...props
 }) => {
   const isDark = false; // TODO: Hook into theme
@@ -46,6 +47,7 @@ export const TextInput: React.FC<TextInputProps> = ({
             borderColor: error ? themeColors.error : themeColors.border,
           },
           inputStyle,
+          style,
         ]}
         placeholderTextColor={themeColors.textSecondary}
         {...props}

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, RefreshControl, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/design/theme/ThemeContext';
 import { useKnowledgeStore } from '@/features/knowledge/KnowledgeStore';
 import { Card } from '@/design/components/Card';
@@ -9,6 +10,7 @@ import { Loading } from '@/design/components/Loading';
 
 export default function KnowledgeScreen() {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   const { items, isLoading, fetchItems, toggleFavorite } = useKnowledgeStore();
 
   useEffect(() => {
@@ -24,9 +26,9 @@ export default function KnowledgeScreen() {
       <FlatList
         data={items}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { paddingTop: insets.top + 16 }]}
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={fetchItems} />
+          <RefreshControl refreshing={isLoading} onRefresh={fetchItems} progressViewOffset={insets.top + 16} />
         }
         ListEmptyComponent={
           <EmptyState

@@ -1,18 +1,16 @@
-import { useEffect, useState } from 'react';
 import { Redirect } from 'expo-router';
 import { useSettingsStore } from '@/features/settings/SettingsStore';
 import { useAIModelStore } from '@/ai/AIModelManager';
+import { View } from 'react-native';
 
 export default function Index() {
-  const { inferenceMode } = useSettingsStore();
-  const { state, checkStatus } = useAIModelStore();
-  const [isReady, setIsReady] = useState(false);
+  const { inferenceMode, _hasHydrated } = useSettingsStore();
+  const { state } = useAIModelStore();
 
-  useEffect(() => {
-    checkStatus().then(() => setIsReady(true));
-  }, [checkStatus]);
-
-  if (!isReady) return null;
+  // Wait for settings to hydrate to avoid wrong redirection
+  if (!_hasHydrated) {
+    return <View style={{ flex: 1 }} />;
+  }
 
   // Logic to check if user is authenticated
   const isAuthenticated = true; // Placeholder

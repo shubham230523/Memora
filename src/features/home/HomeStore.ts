@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { knowledgeRepository } from '../knowledge/KnowledgeRepository';
 
 interface HomeState {
   stats: {
@@ -22,13 +23,16 @@ export const useHomeStore = create<HomeState>((set) => ({
 
   fetchHomeData: async () => {
     set({ isLoading: true });
-    // TODO: Fetch from DB/API
-    // Simulate delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    set({
-      stats: { totalItems: 42, itemsThisWeek: 5, knowledgeGaps: 3 },
-      recentItems: [],
-      isLoading: false
-    });
+    try {
+      const [stats, recentItems] = await Promise.all([
+        knowledgeRepository.getStats(),
+        knowledgeRepository.getRecent(5)
+      ]);
+
+      set({ stats, recentItems, isLoading: false });
+    } catch (error) {
+      console.error('Failed to fetch home data', error);
+      set({ isLoading: false });
+    }
   },
 }));
