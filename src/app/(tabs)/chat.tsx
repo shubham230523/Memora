@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, KeyboardAvoidingView, Platform as RNPlatform, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -19,6 +19,15 @@ export default function ChatScreen() {
   const { state: modelState, loadModel } = useAIModelStore();
   const { inferenceMode } = useSettingsStore();
   const [inputText, setInputText] = useState('');
+  const listRef = useRef<FlatList>(null);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      setTimeout(() => {
+        listRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    }
+  }, [messages]);
 
   const isLocalMode = inferenceMode === 'LOCAL';
   const isModelLoading = modelState === 'LOADING';
@@ -80,6 +89,7 @@ export default function ChatScreen() {
         keyboardVerticalOffset={RNPlatform.OS === 'ios' ? 90 : 120}
       >
         <FlatList
+          ref={listRef}
           data={messages}
           keyExtractor={(item) => item.id}
           contentContainerStyle={[styles.messageList, { paddingTop: insets.top + 16 }]}

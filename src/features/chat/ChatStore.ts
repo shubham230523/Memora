@@ -231,28 +231,30 @@ export const useChatStore = create<ChatState>((set, get) => ({
         const segment = winnerSegments[i];
         logger.info(`[CHAT] AI Scanning Segment ${i + 1}/${winnerSegments.length} (from ${segment.source})`);
 
-        const scanSystemPrompt = `You are a precise factual extractor.
-Your ONLY goal is to extract the answer to the QUESTION from the provided DATA.
+        const scanSystemPrompt = `You are Memora, a personal knowledge assistant.
+Your goal is to answer the user's question using the provided DATA.
 
-STRICT RULES:
-1. If the question asks for a "favorite" or "top" item, the first item in a list (#1 or 1.) is the answer.
-2. Provide the extracted fact directly.
-3. Do not include any introductory phrases like "Based on the notes".
-4. If the answer is not in the data, respond with a single word: "NONE".`;
+RULES:
+1. You MUST answer using the information in the DATA.
+2. Speak in a natural, helpful, and human-like way.
+3. If the specific answer is truly not present in the text, you MUST output exactly: "NOT_FOUND_IN_THIS_SEGMENT".
+4. If it's a list, the top item is the favorite.`;
 
-        const scanUserPrompt = `DATA FROM [${segment.source}]:
+        const scanUserPrompt = `DATA SOURCE: ${segment.source}
+CONTENT:
 """
 ${segment.content}
 """
 
-QUESTION: ${content}
+USER QUESTION: ${content}
 
-Extraction:`;
+Instruction: If the answer is in the DATA, answer the question naturally. Otherwise, say "NOT_FOUND_IN_THIS_SEGMENT".
+Answer:`;
 
         const response = await aiProvider.generate({
           prompt: scanUserPrompt,
           systemPrompt: scanSystemPrompt,
-          temperature: 0.0
+          temperature: 0.0 // Return to hard-zero for reliability
         });
 
         let cleanResult = response.text.trim();
@@ -261,11 +263,11 @@ Extraction:`;
         logger.info(`[CHAT] Segment ${i+1} Raw Output: "${cleanResult.substring(0, 100)}"`);
 
         // Check if the result is a valid extraction
-        const isRefusal = cleanResult.toLowerCase().includes('none') ||
-                         cleanResult.toLowerCase().includes('not found') ||
-                         cleanResult.toLowerCase().includes('i don\'t have');
+        const isRefusal = cleanResult.includes('NOT_FOUND_IN_THIS_SEGMENT') ||
+                         cleanResult.toLowerCase().includes('i don\'t have') ||
+                         cleanResult.length < 3;
 
-        if (cleanResult && !isRefusal && cleanResult.length > 1) {
+        if (cleanResult && !isRefusal) {
           fullContent = cleanResult;
           answerFound = true;
           logger.info(`[CHAT] Valid answer extracted from segment ${i + 1}`);
