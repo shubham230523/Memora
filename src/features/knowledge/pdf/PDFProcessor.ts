@@ -33,21 +33,25 @@ export class PDFProcessor {
       // 3. ENGINE A: VISION (ML KIT) - Best for complex layouts
       if (typeof TextRecognition.recognizeText === 'function') {
         try {
-          setLoading(true, 'Initializing Vision Engine... 👁️');
-          logger.info('[PDF] Step 2: Attempting Vision Engine...');
+          setLoading(true, 'Analyzing visual layout... 👁️');
 
-          // ML Kit on Android requires a proper file:// URI to resolve the provider.
-          // In the last attempt, we passed a raw path which caused the "No content provider" error.
-          logger.info(`[PDF] Calling Vision with URI: ${tempPath}`);
+          // TRY 1: Raw Path (No file://)
+          const rawPath = tempPath.replace('file://', '');
+          logger.info(`[PDF] Vision Try 1 (Raw Path): ${rawPath}`);
+          let result = await TextRecognition.recognizeText(rawPath);
 
-          const result = await TextRecognition.recognizeText(tempPath);
+          // TRY 2: URI (if Try 1 failed to find blocks)
+          if (!result || !result.blocks || result.blocks.length === 0) {
+            logger.info(`[PDF] Vision Try 2 (Full URI): ${tempPath}`);
+            result = await TextRecognition.recognizeText(tempPath);
+          }
 
           if (result && result.blocks && result.blocks.length > 0) {
             finalText = this.sortByReadingOrder(result.blocks);
             extractionMethod = "VISION";
             logger.info(`[PDF] Vision Success: Found ${result.blocks.length} blocks.`);
           } else {
-            logger.warn('[PDF] Vision returned 0 blocks. Document might be digital-only or have light ink.');
+            logger.warn('[PDF] Vision returned 0 blocks. Document might be digital-only or native module is restricted.');
           }
         } catch (visionErr: any) {
           logger.warn(`[PDF] Vision Engine failed: ${visionErr.message || 'Unknown error'}`);
@@ -161,45 +165,57 @@ export class PDFProcessor {
       const { setLoading } = useKnowledgeStore.getState();
       const modelStore = useAIModelStore.getState();
 
-      // Ensure model is loaded
-      if (modelStore.state === 'READY') {
-        setLoading(true, 'Waking up the AI... 🧠\n(First time takes about a minute)');
-        await modelStore.loadModel();
+      if (modelStore.state === 'LOADING' || modelStore.state === 'READY') {
+        setLoading(true, 'Waiting for AI engine to wake up... 🧠\n(Finishing background setup)');
+        await modelStore.waitForModelReady();
       }
 
       if (useAIModelStore.getState().state !== 'LOADED') return text;
 
       const aiProvider = getAIProvider();
-      const snippet = text.substring(0, 4000);
 
-      // V14 FEW-SHOT UNTANGLER: Concrete instructions for interleaved text
-      const systemPrompt = `You are an expert document reconstruction AI.
-Your task is to fix text that was jumbled horizontally across columns.
+      // SEGMENTED REFINEMENT: Break text into 1500 char pieces to avoid AI memory crash
+      const chunkSize = 1500;
+      const parts = [];
+      for (let i = 0; i < text.length; i += chunkSize) {
+        parts.push(text.substring(i, i + chunkSize));
+      }
+
+      let refinedResult = "";
+      for (let i = 0; i < parts.length; i++) {
+        setLoading(true, `Reconstructing document... 🛠️\n(Part ${i + 1} of ${parts.length})`);
+        logger.info(`[PDF] AI Refinement: Processing part ${i + 1}/${parts.length}...`);
+
+        const systemPrompt = `You are a Document Layout Reconstructor.
+Your goal is to fix text that was read horizontally across multiple vertical columns.
+
+INSTRUCTIONS:
+1. Identify blocks of text that belong together vertically (like a "Work Experience" section or a "Skills" list).
+2. UNTANGLE lines where words from different columns were mixed together.
+3. OUTPUT ONLY the verbatim text from the document, but in the correct top-to-bottom, column-by-column order.
+4. DO NOT summarize. DO NOT say "Here is the text". DO NOT change any words.
 
 EXAMPLE:
-INPUT: "Skill: React Native, Work: Meta, Experience: 2 years, Role: Senior"
-UNTANGLED:
-"Skill: React Native
-Experience: 2 years
+INPUT: "Skill: React, Work: Google, Year: 2024, Location: NY"
+OUTPUT:
+"Skill: React
+Year: 2024
 
-Work: Meta
-Role: Senior"
+Work: Google
+Location: NY"`;
 
-RULES:
-1. Identify logical sections (e.g., Skills, Work Experience).
-2. Group related lines together vertically.
-3. Remove horizontal interleaving.
-4. Output ONLY the clean, reconstructed document.`;
+        const response = await aiProvider.generate({
+          prompt: `RESTORE THIS JUMBLED TEXT:\n\n${parts[i]}`,
+          systemPrompt,
+          temperature: 0.0
+        });
 
-      const response = await aiProvider.generate({
-        prompt: `UNTANGLE THIS INTERLEAVED DOCUMENT:\n\n${snippet}`,
-        systemPrompt,
-        temperature: 0.0
-      });
+        refinedResult += response.text + "\n\n";
+      }
 
-      return response.text + (text.length > 4000 ? "\n\n" + text.substring(4000) : "");
+      return refinedResult.trim();
     } catch (e) {
-      logger.warn('[PDF] AI Refinement pass failed.', e);
+      logger.warn('[PDF] AI Refinement pass failed or timed out.', e);
       return text;
     }
   }

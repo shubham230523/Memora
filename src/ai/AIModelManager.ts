@@ -22,6 +22,7 @@ interface AIModelStore {
   checkStatus: () => Promise<void>;
   downloadModel: () => Promise<void>;
   loadModel: () => Promise<void>;
+  waitForModelReady: () => Promise<void>;
   deleteModel: () => Promise<void>;
 }
 
@@ -57,6 +58,43 @@ export const useAIModelStore = create<AIModelStore>()(
           logger.error('Failed to load AI model', err);
           set({ state: 'FAILED', error: `Load failed: ${err.message}` });
         }
+      },
+
+      waitForModelReady: async () => {
+        const check = async () => {
+          const { state } = get();
+          if (state === 'LOADED') return true;
+          if (state === 'FAILED' || state === 'NOT_INSTALLED') throw new Error('AI Model is not available.');
+          return false;
+        };
+
+        if (await check()) return;
+
+        // If READY, trigger load
+        if (get().state === 'READY') {
+          get().loadModel();
+        }
+
+        // Wait loop for LOADING state
+        return new Promise((resolve, reject) => {
+          const start = Date.now();
+          const timer = setInterval(async () => {
+            try {
+              if (await check()) {
+                clearInterval(timer);
+                resolve();
+              }
+              // Timeout after 3 minutes
+              if (Date.now() - start > 180000) {
+                clearInterval(timer);
+                reject(new Error('AI Model load timed out.'));
+              }
+            } catch (e) {
+              clearInterval(timer);
+              reject(e);
+            }
+          }, 1000);
+        });
       },
 
       downloadModel: async () => {

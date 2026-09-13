@@ -192,16 +192,17 @@ export const useChatStore = create<ChatState>((set, get) => ({
         content: '',
         createdAt: new Date().toISOString()
       };
-      set(state => ({ messages: [...state.messages, initialAssistantMsg], thinkingStep: 'Searching your library...' }));
+      set(state => ({ messages: [...state.messages, initialAssistantMsg], thinkingStep: 'Searching your library... 🔍' }));
 
       let fullContent = '';
       let answerFound = false;
 
       // Friendly Intent Mapper
       const getFriendlyThinkingStep = (index: number, total: number, source: string) => {
-        if (isJobQuery) return `Checking your professional documents... (${index}/${total})`;
-        if (isRankingQuery) return `Finding your preferences... (${index}/${total})`;
-        return `Reading your saved notes... (${index}/${total})`;
+        const shortName = source.length > 20 ? source.substring(0, 17) + '...' : source;
+        if (isJobQuery) return `Analyzing ${shortName}... 💼`;
+        if (isRankingQuery) return `Checking ${shortName} for favorites... ⭐`;
+        return `Reading ${shortName}... 📖`;
       };
 
       // Filtering segments for scanning
@@ -272,6 +273,7 @@ Extraction:`;
         logger.info(`[CHAT] Segment ${i+1} Raw Output: "${cleanResult.substring(0, 100)}"`);
 
         if (cleanResult && !cleanResult.includes('NOT_FOUND') && cleanResult.length > 2) {
+          set({ thinkingStep: 'Finalizing the answer... ✨' });
           fullContent = cleanResult;
           answerFound = true;
           logger.info(`[CHAT] Valid answer extracted from segment ${i + 1}`);
