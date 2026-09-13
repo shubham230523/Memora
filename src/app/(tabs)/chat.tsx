@@ -69,6 +69,13 @@ export default function ChatScreen() {
     let changed = true;
     while (changed) {
       changed = false;
+      // Also remove any leading colons or whitespace that appear at the start
+      const leadingNoise = /^[:\s]+/;
+      if (leadingNoise.test(cleaned)) {
+        cleaned = cleaned.replace(leadingNoise, '').trim();
+        changed = true;
+      }
+
       for (const prefix of prefixes) {
         if (prefix.test(cleaned)) {
           cleaned = cleaned.replace(prefix, '').trim();
