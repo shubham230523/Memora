@@ -12,7 +12,7 @@ import { Loading } from '@/design/components/Loading';
 export default function KnowledgeScreen() {
   const { theme, isDark } = useTheme();
   const insets = useSafeAreaInsets();
-  const { items, isLoading, fetchItems, toggleFavorite, deleteItem } = useKnowledgeStore();
+  const { items, isLoading, filter, setFilter, fetchItems, toggleFavorite, deleteItem } = useKnowledgeStore();
 
   useEffect(() => {
     fetchItems();
@@ -36,10 +36,24 @@ export default function KnowledgeScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
+      <View style={[styles.filterBar, { paddingTop: insets.top + 16, backgroundColor: theme.colors.surface }]}>
+        <TouchableOpacity
+          style={[styles.filterTab, filter.isFavorite === undefined && styles.activeTab]}
+          onPress={() => setFilter({ ...filter, isFavorite: undefined })}
+        >
+          <Text style={[styles.filterText, { color: filter.isFavorite === undefined ? theme.colors.primary : theme.colors.textSecondary }]}>All</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.filterTab, filter.isFavorite === true && styles.activeTab]}
+          onPress={() => setFilter({ ...filter, isFavorite: true })}
+        >
+          <Text style={[styles.filterText, { color: filter.isFavorite === true ? theme.colors.primary : theme.colors.textSecondary }]}>Favourites</Text>
+        </TouchableOpacity>
+      </View>
       <FlatList
         data={items}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={[styles.listContent, { paddingTop: insets.top + 16 }]}
+        contentContainerStyle={styles.listContent}
         refreshControl={
           <RefreshControl refreshing={isLoading} onRefresh={fetchItems} progressViewOffset={insets.top + 16} />
         }
@@ -106,6 +120,10 @@ function getIconForType(type: string): any {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  filterBar: { flexDirection: 'row', paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: '#00000010' },
+  filterTab: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginRight: 8 },
+  activeTab: { backgroundColor: '#00000008' },
+  filterText: { fontWeight: '600' },
   listContent: { padding: 16 },
   card: { marginBottom: 16 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },

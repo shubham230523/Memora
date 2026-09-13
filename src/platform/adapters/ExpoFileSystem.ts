@@ -49,4 +49,22 @@ export class ExpoFileSystem implements IFileSystemProvider {
       throw error;
     }
   }
+
+  async copyFile(from: string, to: string): Promise<void> {
+    try {
+      await FileSystem.copyAsync({ from, to });
+    } catch (error) {
+      logger.error('Failed to copy file', error);
+      throw error;
+    }
+  }
+
+  async writeTextFile(fileUri: string, content: string): Promise<void> {
+    try {
+      await FileSystem.writeAsStringAsync(fileUri, content, { encoding: FileSystem.EncodingType.UTF8 });
+    } catch (error) {
+      logger.error('Failed to write file', error);
+      throw error;
+    }
+  }
 }

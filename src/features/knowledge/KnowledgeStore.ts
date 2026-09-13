@@ -6,8 +6,10 @@ import { logger } from '../../core/logging/Logger';
 interface KnowledgeState {
   items: KnowledgeItem[];
   isLoading: boolean;
+  loadingLabel: string;
   filter: KnowledgeFilter;
   setFilter: (filter: KnowledgeFilter) => void;
+  setLoading: (isLoading: boolean, label?: string) => void;
   fetchItems: () => Promise<void>;
   toggleFavorite: (id: string) => Promise<void>;
   deleteItem: (id: string) => Promise<void>;
@@ -16,7 +18,10 @@ interface KnowledgeState {
 export const useKnowledgeStore = create<KnowledgeState>((set, get) => ({
   items: [],
   isLoading: false,
+  loadingLabel: '',
   filter: {},
+
+  setLoading: (isLoading, label = '') => set({ isLoading, loadingLabel: label }),
 
   setFilter: (filter) => {
     set({ filter });

@@ -1,6 +1,9 @@
-import { recognizeText } from '@dariyd/react-native-text-recognition';
+import * as TextRecognition from '@dariyd/react-native-text-recognition';
+import * as DigitalExtract from 'expo-pdf-text-extract';
 import { logger } from '../../../core/logging/Logger';
 import { getAIProvider } from '../../../ai/AIProviderFactory';
+import { Platform } from '../../../platform/Platform';
+import { useKnowledgeStore } from '../KnowledgeStore';
 
 export interface PDFMetadata {
   title?: string;
@@ -10,119 +13,164 @@ export interface PDFMetadata {
 
 export class PDFProcessor {
   async process(uri: string): Promise<string> {
+    const tempPath = `${Platform.FileSystem.documentDirectory}ingestion_temp.pdf`;
+
     try {
-      logger.info(`Starting Industry-Level Vision Ingestion for: ${uri}`);
+      const { setLoading } = useKnowledgeStore.getState();
+      logger.info(`[PDF] STARTING ROBUST INGESTION: ${uri}`);
 
-      // Step 1: Visual Block Extraction via ML Kit
-      const result = await recognizeText(uri);
+      // 1. AVAILABILITY CHECK
+      const isDigitalAvailable = typeof DigitalExtract.isAvailable === 'function' && DigitalExtract.isAvailable();
+      logger.info(`[PDF] Engine Status -> Digital: ${isDigitalAvailable}, Vision: ${typeof TextRecognition.recognizeText === 'function'}`);
 
-      if (!result || !result.blocks || result.blocks.length === 0) {
-        logger.warn('ML Kit returned no text. PDF may be empty or unreadable.');
-        return "";
+      // 2. CREATE LOCAL COPY (CRITICAL FOR ANDROID)
+      logger.info(`[PDF] Step 1: Copying to internal storage: ${tempPath}`);
+      await Platform.FileSystem.copyFile(uri, tempPath);
+
+      let finalText = "";
+      let extractionMethod = "NONE";
+
+      // 3. ENGINE A: VISION (ML KIT) - Best for complex layouts
+      if (typeof TextRecognition.recognizeText === 'function') {
+        try {
+          setLoading(true, 'Extracting text layout... (10s)');
+          logger.info('[PDF] Step 2: Attempting Vision Engine...');
+          // On Android, remove file:// for ML Kit if needed
+          const visionPath = tempPath.replace('file://', '');
+          const result = await TextRecognition.recognizeText(visionPath);
+
+          if (result && result.blocks && result.blocks.length > 0) {
+            finalText = this.sortByReadingOrder(result.blocks);
+            extractionMethod = "VISION";
+            logger.info(`[PDF] Vision Success: Found ${result.blocks.length} blocks.`);
+          }
+        } catch (visionErr) {
+          logger.warn('[PDF] Vision Engine failed', visionErr);
+        }
       }
 
-      // Step 2: Reading Order Algorithm (Column & Block Sorting)
-      // This solves the 2-column problem by analyzing visual layout
-      const orderedText = this.sortByReadingOrder(result.blocks);
+      // 4. ENGINE B: DIGITAL (PDFBox) - Fallback for clean text layers
+      if ((!finalText || finalText.trim().length < 50) && isDigitalAvailable) {
+        try {
+          setLoading(true, 'Reading document layers... (5s)');
+          logger.info('[PDF] Step 3: Attempting Digital Engine fallback...');
+          // Digital extractor often prefers the file:// URI on Android
+          const digitalText = await DigitalExtract.extractText(tempPath);
 
-      // Step 3: Heuristic Cleaning (Headers/Footers & Artifacts)
-      const cleanedText = this.cleanText(orderedText);
+          if (digitalText && digitalText.trim().length > 0) {
+            finalText = this.cleanDigitalText(digitalText);
+            extractionMethod = "DIGITAL";
+            logger.info(`[PDF] Digital Success: Extracted ${finalText.length} characters.`);
+          }
+        } catch (digitalErr) {
+          logger.error('[PDF] Digital Engine failed', digitalErr);
+        }
+      }
 
-      // Step 4: AI Refinement Pass (Fixing Tables, Ligatures, and Semantic Flow)
-      // We only do this for the first 4000 chars to save time/tokens for the ingestion phase
-      const refinedText = await this.aiRefinementPass(cleanedText);
+      // 5. VALIDATION
+      if (!finalText || finalText.trim().length === 0) {
+        throw new Error('All extraction engines failed. This PDF might be encrypted, empty, or use an unsupported format.');
+      }
 
-      // LOG TO TERMINAL FOR VERIFICATION
-      console.log('--- PRO PDF VISION EXTRACTION VERIFICATION ---');
-      console.log(`File: ${uri}`);
-      console.log(`Blocks Found: ${result.blocks.length}`);
-      console.log(`Total Characters: ${refinedText.length}`);
-      console.log('First 1000 characters:');
-      console.log(refinedText.substring(0, 1000));
-      console.log('--- END VERIFICATION ---');
+      // 6. AI REFINEMENT (SKIP FOR NOW DUE TO TRUNCATION)
+      logger.info('[PDF] Step 4: Finalizing text (AI Refinement skipped to prevent character loss)...');
+      const refinedText = finalText; // Keep 100% of characters
+
+      // 7. CLEANUP
+      await Platform.FileSystem.deleteFile(tempPath);
+
+      // 8. TERMINAL VERIFICATION & DUMP
+      console.log('--- INDUSTRY PDF EXTRACTION SUCCESS ---');
+      console.log(`Method: ${extractionMethod}`);
+      console.log(`Final Size: ${refinedText.length} chars`);
+      console.log('FULL_TEXT_DUMP_START');
+      console.log(refinedText);
+      console.log('FULL_TEXT_DUMP_END');
+      console.log('---------------------------------------');
 
       return refinedText;
+
     } catch (error) {
-      logger.error('Industrial PDF Ingestion failed', error);
+      // Ensure cleanup even on error
+      try { await Platform.FileSystem.deleteFile(tempPath); } catch {}
+      logger.error('[PDF] INGESTION FAILED', error);
       throw error;
     }
   }
 
   private sortByReadingOrder(blocks: any[]): string {
-    // 1. Sort primarily by Y (Vertical position)
-    const sorted = [...blocks].sort((a, b) => a.frame.y - b.frame.y);
-
-    // 2. Column Detection Heuristic
-    // We look for blocks that are horizontally separated by a large gap
-    const leftColumn: any[] = [];
-    const rightColumn: any[] = [];
-
-    // Simple 2-column detection: find average center
     const xValues = blocks.map(b => b.frame.x);
     const minX = Math.min(...xValues);
     const maxX = Math.max(...xValues.map((x, i) => x + blocks[i].frame.width));
     const midPoint = (minX + maxX) / 2;
 
-    // Check if the document actually has 2 columns by looking for a "gutter"
     const hasGutter = blocks.some(b => b.frame.x > midPoint) &&
                       blocks.some(b => (b.frame.x + b.frame.width) < midPoint);
 
     if (hasGutter) {
-      logger.info('[PDF] Multi-column layout detected. Applying column sorting.');
-      blocks.forEach(b => {
-        if (b.frame.x + (b.frame.width / 2) < midPoint) {
-          leftColumn.push(b);
-        } else {
-          rightColumn.push(b);
-        }
-      });
-
-      const sortedLeft = leftColumn.sort((a, b) => a.frame.y - b.frame.y);
-      const sortedRight = rightColumn.sort((a, b) => a.frame.y - b.frame.y);
-
-      return [...sortedLeft, ...sortedRight].map(b => b.text).join('\n\n');
+      const left = blocks.filter(b => b.frame.x + (b.frame.width / 2) < midPoint).sort((a, b) => a.frame.y - b.frame.y);
+      const right = blocks.filter(b => b.frame.x + (b.frame.width / 2) >= midPoint).sort((a, b) => a.frame.y - b.frame.y);
+      return [...left, ...right].map(b => b.text).join('\n\n');
     }
 
-    // Default: Sort by Y (Vertical flow)
-    return sorted.map(b => b.text).join('\n\n');
+    return blocks.sort((a, b) => a.frame.y - b.frame.y).map(b => b.text).join('\n\n');
   }
 
-  private cleanText(text: string): string {
+  private cleanDigitalText(text: string): string {
     return text
-      // Fix Ligatures (fl, fi, ff)
-      .replace(/ﬁ/g, 'fi')
-      .replace(/ﬂ/g, 'fl')
-      .replace(/ﬀ/g, 'ff')
-      // Fix Hyphenation across lines
-      .replace(/(\w+)-\n+(\w+)/g, '$1$2')
-      // Standard cleanup
       .replace(/\s+/g, ' ')
+      .replace(/(\w+)-\s+(\w+)/g, '$1$2')
       .replace(/\n\s*\n/g, '\n\n')
       .trim();
   }
 
-  private async aiRefinementPass(text: string): Promise<string> {
+  private async aiRefinementPass(text: string, isJumbled: boolean): Promise<string> {
     try {
-      const aiProvider = getAIProvider();
-      const snippet = text.substring(0, 4000); // Process a large snippet for structure
+      const { useAIModelStore } = await import('../../../ai/AIModelManager');
+      const { setLoading } = useKnowledgeStore.getState();
+      const modelStore = useAIModelStore.getState();
 
-      const systemPrompt = "You are a professional document rewriter. Your goal is to convert messy OCR text into clean Markdown. Fix tables, remove page numbers, and ensure logical flow. Output ONLY the refined text.";
+      // If model is not loaded but ready on disk, load it now
+      if (modelStore.state === 'READY') {
+        setLoading(true, 'Waking up AI engine... (10s)');
+        logger.info('[PDF] AI Model ready on disk but not in memory. Loading for refinement...');
+        await modelStore.loadModel();
+      }
+
+      // Re-check state after potential load
+      const currentState = useAIModelStore.getState().state;
+      if (currentState !== 'LOADED') {
+        logger.warn(`[PDF] AI Model state is ${currentState}, skipping refinement pass to avoid crash.`);
+        return text;
+      }
+
+      const aiProvider = getAIProvider();
+      const snippet = text.substring(0, 4000);
+
+      const systemPrompt = isJumbled
+        ? "You are a document extraction expert. Reorder the horizontally jumbled 2-column text into a logical single column. Fix word breaks. Output ONLY the reordered text."
+        : "You are a professional text cleaner. Fix OCR errors, remove PDF artifacts, and normalize formatting. Output ONLY the cleaned text.";
 
       const response = await aiProvider.generate({
-        prompt: `RELIABLY REWRITE THIS TEXT:\n\n${snippet}`,
+        prompt: `EXTRACTED DATA:\n\n${snippet}`,
         systemPrompt,
         temperature: 0.0
       });
 
       return response.text + (text.length > 4000 ? "\n\n" + text.substring(4000) : "");
     } catch (e) {
-      logger.warn('AI Refinement Pass failed, using raw cleaned text.', e);
+      logger.warn('[PDF] AI Refinement pass failed or skipped.', e);
       return text;
     }
   }
 
   async extractMetadata(uri: string): Promise<PDFMetadata> {
-    return { title: 'Vision Extracted Document' };
+    try {
+      const count = await DigitalExtract.getPageCount(uri);
+      return { title: 'PDF Document', pageCount: count };
+    } catch {
+      return { title: 'PDF Document' };
+    }
   }
 }
 

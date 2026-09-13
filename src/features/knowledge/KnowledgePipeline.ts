@@ -6,13 +6,22 @@ import { chunkRepository } from './ChunkRepository';
 import { logger } from '../../core/logging/Logger';
 import { Platform } from '../../platform/Platform';
 import { KnowledgeType } from './models/KnowledgeItem';
+import { useKnowledgeStore } from './KnowledgeStore';
 
 export class KnowledgePipeline {
   async ingestPDF(uri: string, name: string): Promise<void> {
+    const { setLoading } = useKnowledgeStore.getState();
     try {
+      setLoading(true, 'Initializing AI engine... (5s)');
       const text = await pdfProcessor.process(uri);
+
+      if (!text || text.trim().length === 0) {
+        throw new Error('No text could be extracted from this PDF. It might be empty or unreadable.');
+      }
+
       const note = await noteRepository.create(`PDF: ${name}`, text, KnowledgeType.PDF);
 
+      setLoading(true, 'Optimizing for search... (3s)');
       // Document chunking (MVP requirement 9)
       // High-precision chunking (200 chars) for 0.5B models to prevent cognitive overload
       const chunks = this.chunkText(text, 200);
@@ -22,8 +31,10 @@ export class KnowledgePipeline {
         index,
       })));
 
+      setLoading(false);
       logger.info(`Successfully ingested PDF: ${name} with ${chunks.length} chunks`);
     } catch (error) {
+      setLoading(false);
       logger.error(`Failed to ingest PDF: ${name}`, error);
       throw error;
     }

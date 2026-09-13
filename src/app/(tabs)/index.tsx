@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, Alert, Linking } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -11,13 +11,16 @@ import { Icon } from '@/design/components/Icon';
 import { EmptyState } from '@/design/components/EmptyState';
 import { Platform } from '@/platform/Platform';
 import { knowledgePipeline } from '@/features/knowledge/KnowledgePipeline';
+import { useKnowledgeStore } from '@/features/knowledge/KnowledgeStore';
 import { logger } from '@/core/logging/Logger';
+import { Loading } from '@/design/components/Loading';
 
 export default function HomeScreen() {
   const { theme, isDark } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { stats, recentItems, isLoading, fetchHomeData } = useHomeStore();
+  const { stats, recentItems, isLoading: isHomeLoading, fetchHomeData } = useHomeStore();
+  const { isLoading: isKnowledgeLoading, loadingLabel } = useKnowledgeStore();
 
   useFocusEffect(
     useCallback(() => {
@@ -49,24 +52,31 @@ export default function HomeScreen() {
         }
         const res = await Platform.Camera.takePhoto();
         if (res) {
+          setIsProcessing(true);
           await knowledgePipeline.ingestImage(res.uri);
           await fetchHomeData();
+          setIsProcessing(false);
           Alert.alert('Success', 'Image processed via OCR');
         }
       } else if (type === 'VOICE') {
         router.push('/notes/voice-record');
       }
     } catch (error) {
+      setIsProcessing(false);
       logger.error(`Failed to capture ${type}`, error);
       Alert.alert('Error', `Failed to process ${type.toLowerCase()}`);
     }
   };
 
+  if (isKnowledgeLoading) {
+    return <Loading label={loadingLabel || "Ingesting knowledge..."} />;
+  }
+
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
       refreshControl={
-        <RefreshControl refreshing={isLoading} onRefresh={fetchHomeData} />
+        <RefreshControl refreshing={isHomeLoading} onRefresh={fetchHomeData} />
       }
     >
       <StatusBar style={isDark ? 'light' : 'dark'} />
