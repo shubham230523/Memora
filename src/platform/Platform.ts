@@ -3,7 +3,7 @@ import { ExpoCamera } from './adapters/ExpoCamera';
 import { ExpoMicrophone } from './adapters/ExpoMicrophone';
 import { ExpoSecureStorage } from './adapters/ExpoSecureStorage';
 import { ExpoNotifications } from './adapters/ExpoNotifications';
-import { PlaceholderOCR } from './adapters/PlaceholderOCR';
+import { MLKitOCR } from './adapters/MLKitOCR';
 import { LlamaLocalAI } from './adapters/LlamaLocalAI';
 import { ExpoFileSystem } from './adapters/ExpoFileSystem';
 
@@ -13,8 +13,7 @@ export const Platform = {
   Microphone: new ExpoMicrophone(),
   SecureStorage: new ExpoSecureStorage(),
   Notifications: new ExpoNotifications(),
-  OCR: new PlaceholderOCR(),
+  OCR: new MLKitOCR(),
   LocalAI: new LlamaLocalAI(),
   FileSystem: new ExpoFileSystem(),
 };
-
