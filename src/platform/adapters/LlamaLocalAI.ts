@@ -35,7 +35,7 @@ export class LlamaLocalAI implements ILocalAIProvider {
       this.context = await initLlama({
         model: formattedPath,
         use_mlock: false, // Set to false to prevent OOM on mid-range devices
-        n_ctx: 1024,      // Reduced context size for lower memory footprint
+        n_ctx: 2048,      // Increased context size for better knowledge density
         n_gpu_layers: 0,  // Disable GPU offloading for stability on shared RAM devices
       });
       logger.info('Local model loaded');
@@ -62,19 +62,15 @@ export class LlamaLocalAI implements ILocalAIProvider {
 
     if (!this.context) throw new Error('Model not loaded');
 
-    // Qwen/Llama Chat Template
-    const fullPrompt = `<|im_start|>system
-${request.systemPrompt || 'You are a helpful assistant.'}<|im_end|>
-<|im_start|>user
-${request.prompt}<|im_end|>
-<|im_start|>assistant`;
+    const fullPrompt = this.formatPrompt(request);
+    logger.debug(`[AI] Final Prompt sent to model:\n${fullPrompt}`);
 
     let result = '';
     await this.context.completion(
       {
         prompt: fullPrompt,
         n_predict: 256, // Reduced for faster response
-        temperature: request.temperature || 0.7,
+        temperature: 0.1, // Low but stable for natural extraction
         stop: ['<|im_end|>', '<|endoftext|>'],
       },
       (data: any) => {
@@ -98,17 +94,14 @@ ${request.prompt}<|im_end|>
 
     if (!this.context) throw new Error('Model not loaded');
 
-    const fullPrompt = `<|im_start|>system
-${request.systemPrompt || 'You are a helpful assistant.'}<|im_end|>
-<|im_start|>user
-${request.prompt}<|im_end|>
-<|im_start|>assistant`;
+    const fullPrompt = this.formatPrompt(request);
+    logger.debug(`[AI] Final Prompt (stream) sent to model:\n${fullPrompt}`);
 
     await this.context.completion(
       {
         prompt: fullPrompt,
         n_predict: 256,
-        temperature: request.temperature || 0.7,
+        temperature: 0.1, // Low but stable for natural extraction
         stop: ['<|im_end|>', '<|endoftext|>'],
       },
       (data: any) => {
@@ -117,5 +110,23 @@ ${request.prompt}<|im_end|>
     );
 
     onChunk({ text: '', isFinal: true });
+  }
+
+  private formatPrompt(request: AIRequest): string {
+    // Qwen/Llama Chat Template with History support
+    let prompt = `<|im_start|>system
+${request.systemPrompt || 'You are a helpful assistant.'}<|im_end|>\n`;
+
+    if (request.history && request.history.length > 0) {
+      for (const msg of request.history) {
+        prompt += `<|im_start|>${msg.role}\n${msg.content}<|im_end|>\n`;
+      }
+    }
+
+    prompt += `<|im_start|>user
+${request.prompt}<|im_end|>
+<|im_start|>assistant`;
+
+    return prompt;
   }
 }

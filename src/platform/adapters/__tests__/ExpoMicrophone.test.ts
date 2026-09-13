@@ -1,10 +1,11 @@
 import { ExpoMicrophone } from '../ExpoMicrophone';
-import { Audio } from 'expo-av';
+import { Audio } from 'expo-audio';
 import { logger } from '../../../core/logging/Logger';
 
-jest.mock('expo-av', () => ({
+jest.mock('expo-audio', () => ({
   Audio: {
     requestPermissionsAsync: jest.fn(),
+    getPermissionsAsync: jest.fn(),
     setAudioModeAsync: jest.fn(),
     Recording: {
       createAsync: jest.fn(),

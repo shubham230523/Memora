@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { KnowledgeItem } from './models/KnowledgeItem';
 import { knowledgeRepository, KnowledgeFilter } from './KnowledgeRepository';
+import { logger } from '../../core/logging/Logger';
 
 interface KnowledgeState {
   items: KnowledgeItem[];
@@ -43,9 +44,16 @@ export const useKnowledgeStore = create<KnowledgeState>((set, get) => ({
   },
 
   deleteItem: async (id) => {
-    await knowledgeRepository.delete(id);
-    set({
-      items: get().items.filter(i => i.id !== id)
-    });
+    try {
+      logger.info(`Deleting knowledge item: ${id}`);
+      await knowledgeRepository.delete(id);
+      set(state => ({
+        items: state.items.filter(i => i.id !== id)
+      }));
+      logger.info(`Knowledge item ${id} deleted successfully`);
+    } catch (error) {
+      logger.error(`Failed to delete knowledge item ${id}`, error);
+      throw error;
+    }
   },
 }));

@@ -84,6 +84,36 @@ export class KnowledgeRepository {
     }));
   }
 
+  async searchChunks(keywords: string[]): Promise<any[]> {
+    if (keywords.length === 0) return [];
+
+    const db = await getDb();
+    const searchConditions = keywords.map(() => 'c.content LIKE ?').join(' OR ');
+    const params = keywords.map(kw => `%${kw}%`);
+
+    const query = `
+      SELECT c.*, k.title as sourceTitle, k.type as sourceType
+      FROM chunks c
+      JOIN knowledge_items k ON c.knowledgeItemId = k.id
+      WHERE ${searchConditions}
+      LIMIT 50
+    `;
+
+    return await db.getAllAsync<any>(query, params);
+  }
+
+  async getRecentChunks(limit: number = 5): Promise<any[]> {
+    const db = await getDb();
+    const query = `
+      SELECT c.*, k.title as sourceTitle, k.type as sourceType
+      FROM chunks c
+      JOIN knowledge_items k ON c.knowledgeItemId = k.id
+      ORDER BY k.updatedAt DESC
+      LIMIT ?
+    `;
+    return await db.getAllAsync<any>(query, [limit]);
+  }
+
   async toggleFavorite(id: string, isFavorite: boolean): Promise<void> {
     const db = await getDb();
     await db.runAsync(

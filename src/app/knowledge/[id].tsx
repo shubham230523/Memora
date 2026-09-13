@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '@/design/theme/ThemeContext';
 import { knowledgeRepository } from '@/features/knowledge/KnowledgeRepository';
+import { useKnowledgeStore } from '@/features/knowledge/KnowledgeStore';
 import { KnowledgeItem } from '@/features/knowledge/models/KnowledgeItem';
 import { Loading } from '@/design/components/Loading';
 import { Button } from '@/design/components/Button';
@@ -47,9 +48,19 @@ export default function KnowledgeDetailScreen() {
       <View style={styles.actions}>
         <Button title="Summarize (AI)" onPress={() => {}} variant="secondary" />
         <Button title="Edit" onPress={() => {}} variant="outline" />
-        <Button title="Delete" onPress={async () => {
-          await knowledgeRepository.delete(item.id);
-          router.back();
+        <Button title="Delete" onPress={() => {
+          Alert.alert(
+            'Delete Knowledge',
+            'Are you sure you want to delete this item?',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Delete', style: 'destructive', onPress: async () => {
+                const { deleteItem } = useKnowledgeStore.getState();
+                await deleteItem(item.id);
+                router.back();
+              }},
+            ]
+          );
         }} variant="ghost" style={{ marginTop: 8 }} />
       </View>
     </ScrollView>

@@ -9,13 +9,14 @@ jest.mock('expo-image-picker', () => ({
   requestCameraPermissionsAsync: jest.fn(async () => ({ status: 'granted' })),
 }));
 
-jest.mock('expo-av', () => ({
+jest.mock('expo-audio', () => ({
   Audio: {
     Recording: {
       createAsync: jest.fn(),
     },
     setAudioModeAsync: jest.fn(),
     requestPermissionsAsync: jest.fn(async () => ({ status: 'granted' })),
+    getPermissionsAsync: jest.fn(async () => ({ granted: true })),
   },
 }));
 

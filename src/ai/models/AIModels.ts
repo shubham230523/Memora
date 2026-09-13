@@ -1,6 +1,7 @@
 export interface AIRequest {
   prompt: string;
   systemPrompt?: string;
+  history?: { role: 'user' | 'assistant'; content: string }[];
   temperature?: number;
   stream?: boolean;
 }

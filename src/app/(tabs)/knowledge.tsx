@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, RefreshControl, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, RefreshControl, TouchableOpacity, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '@/design/theme/ThemeContext';
@@ -12,11 +12,22 @@ import { Loading } from '@/design/components/Loading';
 export default function KnowledgeScreen() {
   const { theme, isDark } = useTheme();
   const insets = useSafeAreaInsets();
-  const { items, isLoading, fetchItems, toggleFavorite } = useKnowledgeStore();
+  const { items, isLoading, fetchItems, toggleFavorite, deleteItem } = useKnowledgeStore();
 
   useEffect(() => {
     fetchItems();
   }, [fetchItems]);
+
+  const handleDelete = (id: string, title: string) => {
+    Alert.alert(
+      'Delete Knowledge',
+      `Are you sure you want to delete "${title}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: () => deleteItem(id) },
+      ]
+    );
+  };
 
   if (isLoading && items.length === 0) {
     return <Loading />;
@@ -45,13 +56,26 @@ export default function KnowledgeScreen() {
                 <Icon name={getIconForType(item.type)} size={16} color={theme.colors.primary} />
                 <Text style={[styles.typeText, { color: theme.colors.primary }]}>{item.type}</Text>
               </View>
-              <TouchableOpacity onPress={() => toggleFavorite(item.id)}>
-                <Icon
-                  name={item.isFavorite ? "star" : "star-outline"}
-                  size={24}
-                  color={item.isFavorite ? theme.colors.warning : theme.colors.textSecondary}
-                />
-              </TouchableOpacity>
+              <View style={styles.headerActions}>
+                <TouchableOpacity onPress={() => toggleFavorite(item.id)}>
+                  <Icon
+                    name={item.isFavorite ? "star" : "star-outline"}
+                    size={24}
+                    color={item.isFavorite ? theme.colors.warning : theme.colors.textSecondary}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => handleDelete(item.id, item.title)}
+                  style={styles.deleteButton}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <Icon
+                    name="trash-can-outline"
+                    size={24}
+                    color={theme.colors.error}
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
             <Text style={[styles.cardTitle, { color: theme.colors.text }]} numberOfLines={1}>
               {item.title}
@@ -86,6 +110,8 @@ const styles = StyleSheet.create({
   card: { marginBottom: 16 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   typeTag: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  deleteButton: { marginLeft: 4 },
   typeText: { fontSize: 12, fontWeight: 'bold' },
   cardTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 4 },
   cardContent: { fontSize: 14, marginBottom: 8 },

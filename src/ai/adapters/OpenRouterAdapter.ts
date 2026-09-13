@@ -24,7 +24,8 @@ export class OpenRouterAdapter implements IAIProvider {
       body: JSON.stringify({
         model: 'google/gemini-pro-1.5',
         messages: [
-          { role: 'system', content: request.systemPrompt },
+          ...(request.systemPrompt ? [{ role: 'system', content: request.systemPrompt }] : []),
+          ...(request.history?.map(h => ({ role: h.role, content: h.content })) || []),
           { role: 'user', content: request.prompt },
         ],
         temperature: request.temperature,

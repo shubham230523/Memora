@@ -44,6 +44,33 @@ export default function ChatScreen() {
     setInputText('');
   };
 
+  const formatDisplayContent = (content: string) => {
+    // Remove reasoning tags
+    let cleaned = content.replace(/<thought>[\s\S]*?<\/thought>/g, '').trim();
+
+    // Aggressively remove common SLM intros
+    const prefixes = [
+      /^result:\s*/i,
+      /^the answer is:\s*/i,
+      /^based on the notes,\s*/i,
+      /^based on the information provided,\s*/i,
+      /^according to your notes,\s*/i
+    ];
+
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const prefix of prefixes) {
+        if (prefix.test(cleaned)) {
+          cleaned = cleaned.replace(prefix, '').trim();
+          changed = true;
+        }
+      }
+    }
+
+    return cleaned;
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
@@ -67,9 +94,19 @@ export default function ChatScreen() {
                 styles.messageCard,
                 { backgroundColor: item.role === 'user' ? theme.colors.primary : theme.colors.surface }
               ] as any}>
-                <Text style={{ color: item.role === 'user' ? '#FFF' : theme.colors.text }}>
-                  {item.content}
-                </Text>
+                {item.role === 'assistant' && !item.content ? (
+                  <View style={styles.thinkingContainer}>
+                    <ActivityIndicator size="small" color={theme.colors.primary} />
+                    <Text style={[styles.thinkingText, { color: theme.colors.textSecondary }]}>Thinking...</Text>
+                  </View>
+                ) : (
+                  <Text style={{
+                    color: item.role === 'user' ? '#FFF' : theme.colors.text,
+                    lineHeight: 22
+                  }}>
+                    {item.role === 'assistant' ? formatDisplayContent(item.content) : item.content.trim()}
+                  </Text>
+                )}
               </Card>
             </View>
           )}
@@ -122,14 +159,25 @@ const styles = StyleSheet.create({
   userMessage: { alignSelf: 'flex-end' },
   assistantMessage: { alignSelf: 'flex-start' },
   messageCard: { padding: 12, borderRadius: 16 },
-  statusBanner: { paddingVertical: 4, paddingHorizontal: 16, borderTopWidth: 1, borderTopColor: '#00000010' },
-  bannerContent: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  thinkingContainer: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 },
+  thinkingText: { fontSize: 14, fontStyle: 'italic' },
+  statusBanner: {
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#00000010'
+  },
+  bannerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10
+  },
   statusText: { fontSize: 12 },
   fixButton: { paddingVertical: 4, paddingHorizontal: 8 },
   inputArea: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 8,
     paddingBottom: RNPlatform.OS === 'ios' ? 32 : 16,
-    borderTopWidth: 1,
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: 12

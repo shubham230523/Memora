@@ -39,13 +39,15 @@ jest.mock('expo-image-picker', () => ({
   MediaTypeOptions: { Images: 'images' },
 }));
 
-jest.mock('expo-av', () => ({
+jest.mock('expo-audio', () => ({
   Audio: {
     Recording: {
       createAsync: jest.fn(),
     },
     setAudioModeAsync: jest.fn(),
     requestPermissionsAsync: jest.fn(),
+    getPermissionsAsync: jest.fn(),
+    RecordingOptionsPresets: { HIGH_QUALITY: {} },
   },
 }));
 

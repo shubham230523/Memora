@@ -28,9 +28,9 @@ export default function AIModelScreen() {
       </View>
 
       <Card style={styles.modelCard}>
-        <Text style={[styles.modelName, { color: theme.colors.text }]}>Qwen 2.5 0.5B</Text>
+        <Text style={[styles.modelName, { color: theme.colors.text }]}>Qwen 2.5 1.5B</Text>
         <Text style={[styles.modelInfo, { color: theme.colors.textSecondary }]}>
-          Size: ~350 MB
+          Size: ~1.1 GB (High Reasoning)
         </Text>
 
         {isDownloading ? (
