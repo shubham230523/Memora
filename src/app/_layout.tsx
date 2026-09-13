@@ -25,6 +25,16 @@ export default function RootLayout() {
           initDb(),
           checkStatus()
         ]);
+
+        // BACKGROUND MODEL LOADING:
+        // Trigger model loading immediately after status check.
+        // This ensures the AI is ready before the user even opens the chat.
+        const { state, loadModel } = useAIModelStore.getState();
+        if (state === 'READY') {
+          logger.info('[APP] App launch: Pre-loading local AI model in background...');
+          loadModel().catch(err => logger.warn('[APP] Background model load failed', err));
+        }
+
         setIsDbReady(true);
       } catch (e) {
         logger.error('Failed to initialize app', e);

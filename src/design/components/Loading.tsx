@@ -34,5 +34,6 @@ const styles = StyleSheet.create({
   text: {
     marginTop: spacing.md,
     fontSize: typography.sizes.md,
+    textAlign: 'center',
   },
 });

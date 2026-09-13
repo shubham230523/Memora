@@ -35,17 +35,22 @@ export class PDFProcessor {
         try {
           setLoading(true, 'Initializing Vision Engine... 👁️');
           logger.info('[PDF] Step 2: Attempting Vision Engine...');
-          // On Android, remove file:// for ML Kit if needed
-          const visionPath = tempPath.replace('file://', '');
-          const result = await TextRecognition.recognizeText(visionPath);
+
+          // ML Kit on Android requires a proper file:// URI to resolve the provider.
+          // In the last attempt, we passed a raw path which caused the "No content provider" error.
+          logger.info(`[PDF] Calling Vision with URI: ${tempPath}`);
+
+          const result = await TextRecognition.recognizeText(tempPath);
 
           if (result && result.blocks && result.blocks.length > 0) {
             finalText = this.sortByReadingOrder(result.blocks);
             extractionMethod = "VISION";
             logger.info(`[PDF] Vision Success: Found ${result.blocks.length} blocks.`);
+          } else {
+            logger.warn('[PDF] Vision returned 0 blocks. Document might be digital-only or have light ink.');
           }
-        } catch (visionErr) {
-          logger.warn('[PDF] Vision Engine failed', visionErr);
+        } catch (visionErr: any) {
+          logger.warn(`[PDF] Vision Engine failed: ${visionErr.message || 'Unknown error'}`);
         }
       }
 
@@ -156,36 +161,45 @@ export class PDFProcessor {
       const { setLoading } = useKnowledgeStore.getState();
       const modelStore = useAIModelStore.getState();
 
-      // If model is not loaded but ready on disk, load it now
+      // Ensure model is loaded
       if (modelStore.state === 'READY') {
         setLoading(true, 'Waking up the AI... 🧠\n(First time takes about a minute)');
-        logger.info('[PDF] AI Model ready on disk but not in memory. Loading for refinement...');
         await modelStore.loadModel();
       }
 
-      // Re-check state after potential load
-      const currentState = useAIModelStore.getState().state;
-      if (currentState !== 'LOADED') {
-        logger.warn(`[PDF] AI Model state is ${currentState}, skipping refinement pass to avoid crash.`);
-        return text;
-      }
+      if (useAIModelStore.getState().state !== 'LOADED') return text;
 
       const aiProvider = getAIProvider();
       const snippet = text.substring(0, 4000);
 
-      const systemPrompt = isJumbled
-        ? "You are a document extraction expert. Reorder the horizontally jumbled 2-column text into a logical single column. Fix word breaks. Output ONLY the reordered text."
-        : "You are a professional text cleaner. Fix OCR errors, remove PDF artifacts, and normalize formatting. Output ONLY the cleaned text.";
+      // V14 FEW-SHOT UNTANGLER: Concrete instructions for interleaved text
+      const systemPrompt = `You are an expert document reconstruction AI.
+Your task is to fix text that was jumbled horizontally across columns.
+
+EXAMPLE:
+INPUT: "Skill: React Native, Work: Meta, Experience: 2 years, Role: Senior"
+UNTANGLED:
+"Skill: React Native
+Experience: 2 years
+
+Work: Meta
+Role: Senior"
+
+RULES:
+1. Identify logical sections (e.g., Skills, Work Experience).
+2. Group related lines together vertically.
+3. Remove horizontal interleaving.
+4. Output ONLY the clean, reconstructed document.`;
 
       const response = await aiProvider.generate({
-        prompt: `EXTRACTED DATA:\n\n${snippet}`,
+        prompt: `UNTANGLE THIS INTERLEAVED DOCUMENT:\n\n${snippet}`,
         systemPrompt,
         temperature: 0.0
       });
 
       return response.text + (text.length > 4000 ? "\n\n" + text.substring(4000) : "");
     } catch (e) {
-      logger.warn('[PDF] AI Refinement pass failed or skipped.', e);
+      logger.warn('[PDF] AI Refinement pass failed.', e);
       return text;
     }
   }
