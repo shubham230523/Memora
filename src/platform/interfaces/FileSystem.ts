@@ -12,4 +12,5 @@ export interface IFileSystemProvider {
   deleteFile(fileUri: string): Promise<void>;
   copyFile(from: string, to: string): Promise<void>;
   writeTextFile(fileUri: string, content: string): Promise<void>;
+  getContentUri(fileUri: string): Promise<string>;
 }

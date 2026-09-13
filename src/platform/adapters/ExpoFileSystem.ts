@@ -67,4 +67,15 @@ export class ExpoFileSystem implements IFileSystemProvider {
       throw error;
     }
   }
+
+  async getContentUri(fileUri: string): Promise<string> {
+    try {
+      // In SDK 57, getContentUriAsync is available on Android
+      // This converts file:// to content:// using Expo's FileProvider
+      return await FileSystem.getContentUriAsync(fileUri);
+    } catch (error) {
+      logger.warn('Failed to get content URI, falling back to original', error);
+      return fileUri;
+    }
+  }
 }

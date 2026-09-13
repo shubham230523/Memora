@@ -128,6 +128,25 @@ export default function HomeScreen() {
             onPress={() => handleCapture('VOICE')}
           />
         </View>
+
+        {/* DEBUG TEST BUTTON */}
+        <TouchableOpacity
+          style={{ marginTop: 24, backgroundColor: '#FF3B3015', padding: 12, borderRadius: 12, alignItems: 'center', borderStyle: 'dashed', borderWidth: 1, borderColor: '#FF3B30' }}
+          onPress={async () => {
+            try {
+              // Internal app path where we pushed the test file via ADB
+              const testUri = 'file:///data/user/0/com.anonymous.Memora/files/test.pdf';
+              logger.info(`[DEBUG] Starting Native OCR Test for: ${testUri}`);
+              await knowledgePipeline.ingestPDF(testUri, 'TEST_RESUME_V17');
+              Alert.alert('Success', 'Check terminal for vertical lane extraction logs');
+            } catch (err: any) {
+              logger.error('[DEBUG] Native Test Failed', err);
+              Alert.alert('Failed', err.message);
+            }
+          }}
+        >
+          <Text style={{ color: theme.colors.error, fontSize: 14, fontWeight: 'bold' }}>⚡ RUN INDUSTRIAL OCR LOOP (RESUME)</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.section}>

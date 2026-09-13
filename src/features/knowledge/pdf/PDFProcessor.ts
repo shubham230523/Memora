@@ -35,26 +35,44 @@ export class PDFProcessor {
         try {
           setLoading(true, 'Analyzing visual layout... 👁️');
 
-          // TRY 1: Raw Path (No file://)
           const rawPath = tempPath.replace('file://', '');
-          logger.info(`[PDF] Vision Try 1 (Raw Path): ${rawPath}`);
-          let result = await TextRecognition.recognizeText(rawPath);
+          const contentUri = await Platform.FileSystem.getContentUri(tempPath);
 
-          // TRY 2: URI (if Try 1 failed to find blocks)
-          if (!result || !result.blocks || result.blocks.length === 0) {
-            logger.info(`[PDF] Vision Try 2 (Full URI): ${tempPath}`);
-            result = await TextRecognition.recognizeText(tempPath);
+          const attempts = [
+            { name: 'Content URI (200 DPI)', path: contentUri, dpi: 200 },
+            { name: 'Content URI (150 DPI)', path: contentUri, dpi: 150 },
+            { name: 'File URI (100 DPI)', path: tempPath, dpi: 100 }
+          ];
+
+          for (const attempt of attempts) {
+             if (finalText) break;
+             try {
+                logger.info(`[PDF] Vision Attempt: ${attempt.name}`);
+                const result = await TextRecognition.recognizeText(attempt.path, {
+                  pdfDpi: attempt.dpi,
+                  preprocessImages: true,
+                  recognitionLevel: 'line', // Best for columns
+                  languages: ['en']
+                });
+
+                if (result && result.blocks && result.blocks.length > 0) {
+                  finalText = this.sortByReadingOrder(result.blocks);
+                  extractionMethod = "VISION";
+                  logger.info(`[PDF] Vision Success with ${attempt.name}: Found ${result.blocks.length} blocks.`);
+                } else {
+                  // Small delay to allow ML Kit model download if pending
+                  await new Promise(r => setTimeout(r, 1000));
+                }
+             } catch (err) {
+                logger.warn(`[PDF] Vision ${attempt.name} failed`);
+             }
           }
 
-          if (result && result.blocks && result.blocks.length > 0) {
-            finalText = this.sortByReadingOrder(result.blocks);
-            extractionMethod = "VISION";
-            logger.info(`[PDF] Vision Success: Found ${result.blocks.length} blocks.`);
-          } else {
-            logger.warn('[PDF] Vision returned 0 blocks. Document might be digital-only or native module is restricted.');
+          if (!finalText) {
+            logger.warn('[PDF] All Vision path formats returned 0 blocks.');
           }
         } catch (visionErr: any) {
-          logger.warn(`[PDF] Vision Engine failed: ${visionErr.message || 'Unknown error'}`);
+          logger.warn(`[PDF] Vision Engine fatal error: ${visionErr.message || 'Unknown error'}`);
         }
       }
 
@@ -85,9 +103,9 @@ export class PDFProcessor {
       logger.info('[PDF] Step 4: Running AI Refinement...');
       setLoading(true, 'Reconstructing logical flow... 🛠️');
 
-      console.log('--- RAW EXTRACTION START ---');
-      console.log(finalText);
-      console.log('--- RAW EXTRACTION END ---');
+      // console.log('--- RAW EXTRACTION START ---');
+      // console.log(finalText);
+      // console.log('--- RAW EXTRACTION END ---');
 
       const refinedText = await this.aiRefinementPass(finalText, extractionMethod === "DIGITAL");
 
@@ -152,7 +170,10 @@ export class PDFProcessor {
   }
 
   private cleanDigitalText(text: string): string {
+    // PRE-PROCESS: Add explicit column markers for the AI to see
+    // We look for at least 3 consecutive spaces which often indicates a column gutter
     return text
+      .replace(/ {3,}/g, ' [COLUMN_GAP] ')
       .replace(/\s+/g, ' ')
       .replace(/(\w+)-\s+(\w+)/g, '$1$2')
       .replace(/\n\s*\n/g, '\n\n')
@@ -174,43 +195,37 @@ export class PDFProcessor {
 
       const aiProvider = getAIProvider();
 
-      // SEGMENTED REFINEMENT: Break text into 1500 char pieces to avoid AI memory crash
-      const chunkSize = 1500;
-      const parts = [];
-      for (let i = 0; i < text.length; i += chunkSize) {
-        parts.push(text.substring(i, i + chunkSize));
-      }
+      // CONTEXTUAL CHUNKING: Split by major resume/document headers to preserve section context
+      const parts = text.split(/(?=TECHNICAL STACK|WORK EXPERIENCE|ACHIEVEMENTS|PROJECTS|CERTIFICATIONS|Languages:|Mobile Core:|Cross-Platform \u0026 Web:|Mobile AI \u0026 SDKs:|AI Productivity:|Agile \u0026 DevOps:)/i)
+                       .filter(p => p.trim().length > 0);
 
       let refinedResult = "";
       for (let i = 0; i < parts.length; i++) {
-        setLoading(true, `Reconstructing document... 🛠️\n(Part ${i + 1} of ${parts.length})`);
-        logger.info(`[PDF] AI Refinement: Processing part ${i + 1}/${parts.length}...`);
+        setLoading(true, `Reconstructing document... 🛠️\n(Section ${i + 1} of ${parts.length})`);
+        logger.info(`[PDF] AI Refinement: Processing section ${i + 1}/${parts.length}...`);
 
-        const systemPrompt = `You are a Document Layout Reconstructor.
-Your goal is to fix text that was read horizontally across multiple vertical columns.
+        const systemPrompt = `You are a Document Reconstructor.
+A 2-column document was read horizontally, mixing words from different columns.
 
-INSTRUCTIONS:
-1. Identify blocks of text that belong together vertically (like a "Work Experience" section or a "Skills" list).
-2. UNTANGLE lines where words from different columns were mixed together.
-3. OUTPUT ONLY the verbatim text from the document, but in the correct top-to-bottom, column-by-column order.
-4. DO NOT summarize. DO NOT say "Here is the text". DO NOT change any words.
-
-EXAMPLE:
-INPUT: "Skill: React, Work: Google, Year: 2024, Location: NY"
-OUTPUT:
-"Skill: React
-Year: 2024
-
-Work: Google
-Location: NY"`;
+STRICT INSTRUCTIONS:
+1. UNTANGLE the text so it reads vertically, column by column.
+2. OUTPUT ONLY THE UNTANGLED TEXT.
+3. DO NOT change any words. DO NOT summarize.
+4. If you see "[COLUMN_GAP]", it means the text to the left is Column 1 and the text to the right is Column 2.
+5. Process ONLY the provided segment. Do not repeat previous sections.`;
 
         const response = await aiProvider.generate({
-          prompt: `RESTORE THIS JUMBLED TEXT:\n\n${parts[i]}`,
+          prompt: `<segment_to_untangle>\n${parts[i]}\n</segment_to_untangle>\n\nUntangled Text:`,
           systemPrompt,
           temperature: 0.0
         });
 
-        refinedResult += response.text + "\n\n";
+        const cleanedPart = response.text.replace(/<.*?>/g, '').trim();
+
+        // Prevent duplication: only add if this part isn't already a significant portion of refinedResult
+        if (cleanedPart.length > 10 && !refinedResult.includes(cleanedPart.substring(0, 30))) {
+          refinedResult += cleanedPart + "\n\n";
+        }
       }
 
       return refinedResult.trim();
