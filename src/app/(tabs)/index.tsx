@@ -69,7 +69,7 @@ export default function HomeScreen() {
   };
 
   if (isKnowledgeLoading) {
-    return <Loading label={loadingLabel || "Ingesting knowledge..."} />;
+    return <Loading message={loadingLabel || "Ingesting knowledge..."} />;
   }
 
   return (

@@ -21,7 +21,7 @@ export class KnowledgePipeline {
 
       const note = await noteRepository.create(`PDF: ${name}`, text, KnowledgeType.PDF);
 
-      setLoading(true, 'Optimizing for search... (3s)');
+      setLoading(true, 'Finishing up... ✨');
       // Document chunking (MVP requirement 9)
       // High-precision chunking (200 chars) for 0.5B models to prevent cognitive overload
       const chunks = this.chunkText(text, 200);

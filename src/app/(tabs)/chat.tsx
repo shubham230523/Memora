@@ -114,7 +114,14 @@ export default function ChatScreen() {
                 {item.role === 'assistant' && !item.content ? (
                   <View style={styles.thinkingContainer}>
                     <ActivityIndicator size="small" color={theme.colors.primary} />
-                    <Text style={[styles.thinkingText, { color: theme.colors.textSecondary }]}>Thinking...</Text>
+                    <View>
+                      <Text style={[styles.thinkingText, { color: theme.colors.textSecondary }]}>Thinking...</Text>
+                      {useChatStore.getState().thinkingStep ? (
+                        <Text style={[styles.thinkingStepText, { color: theme.colors.textSecondary }]}>
+                          {useChatStore.getState().thinkingStep}
+                        </Text>
+                      ) : null}
+                    </View>
                   </View>
                 ) : (
                   <Text style={{
@@ -178,6 +185,7 @@ const styles = StyleSheet.create({
   messageCard: { padding: 12, borderRadius: 16 },
   thinkingContainer: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4 },
   thinkingText: { fontSize: 14, fontStyle: 'italic' },
+  thinkingStepText: { fontSize: 11, marginTop: 2 },
   statusBanner: {
     paddingVertical: 6,
     paddingHorizontal: 16,

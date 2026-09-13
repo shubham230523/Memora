@@ -33,7 +33,7 @@ export class PDFProcessor {
       // 3. ENGINE A: VISION (ML KIT) - Best for complex layouts
       if (typeof TextRecognition.recognizeText === 'function') {
         try {
-          setLoading(true, 'Extracting text layout... (10s)');
+          setLoading(true, 'Initializing Vision Engine... 👁️');
           logger.info('[PDF] Step 2: Attempting Vision Engine...');
           // On Android, remove file:// for ML Kit if needed
           const visionPath = tempPath.replace('file://', '');
@@ -52,7 +52,7 @@ export class PDFProcessor {
       // 4. ENGINE B: DIGITAL (PDFBox) - Fallback for clean text layers
       if ((!finalText || finalText.trim().length < 50) && isDigitalAvailable) {
         try {
-          setLoading(true, 'Reading document layers... (5s)');
+          setLoading(true, 'Reading document layers... 📂');
           logger.info('[PDF] Step 3: Attempting Digital Engine fallback...');
           // Digital extractor often prefers the file:// URI on Android
           const digitalText = await DigitalExtract.extractText(tempPath);
@@ -72,20 +72,28 @@ export class PDFProcessor {
         throw new Error('All extraction engines failed. This PDF might be encrypted, empty, or use an unsupported format.');
       }
 
-      // 6. AI REFINEMENT (SKIP FOR NOW DUE TO TRUNCATION)
-      logger.info('[PDF] Step 4: Finalizing text (AI Refinement skipped to prevent character loss)...');
-      const refinedText = finalText; // Keep 100% of characters
+      // 6. AI REFINEMENT (The "Truth" Pass)
+      logger.info('[PDF] Step 4: Running AI Refinement...');
+      setLoading(true, 'Reconstructing logical flow... 🛠️');
+
+      console.log('--- RAW EXTRACTION START ---');
+      console.log(finalText);
+      console.log('--- RAW EXTRACTION END ---');
+
+      const refinedText = await this.aiRefinementPass(finalText, extractionMethod === "DIGITAL");
+
+      console.log('--- AI REFINED TEXT START ---');
+      console.log(refinedText);
+      console.log('--- AI REFINED TEXT END ---');
 
       // 7. CLEANUP
       await Platform.FileSystem.deleteFile(tempPath);
 
-      // 8. TERMINAL VERIFICATION & DUMP
+      // 8. TERMINAL VERIFICATION
       console.log('--- INDUSTRY PDF EXTRACTION SUCCESS ---');
       console.log(`Method: ${extractionMethod}`);
+      console.log(`Initial Size: ${finalText.length} chars`);
       console.log(`Final Size: ${refinedText.length} chars`);
-      console.log('FULL_TEXT_DUMP_START');
-      console.log(refinedText);
-      console.log('FULL_TEXT_DUMP_END');
       console.log('---------------------------------------');
 
       return refinedText;
@@ -99,21 +107,39 @@ export class PDFProcessor {
   }
 
   private sortByReadingOrder(blocks: any[]): string {
-    const xValues = blocks.map(b => b.frame.x);
-    const minX = Math.min(...xValues);
-    const maxX = Math.max(...xValues.map((x, i) => x + blocks[i].frame.width));
-    const midPoint = (minX + maxX) / 2;
+    if (blocks.length === 0) return "";
 
-    const hasGutter = blocks.some(b => b.frame.x > midPoint) &&
-                      blocks.some(b => (b.frame.x + b.frame.width) < midPoint);
+    // 1. Identify "Starting Lanes" (Columns)
+    // We cluster blocks that start at similar X coordinates
+    const lanes: { x: number; blocks: any[] }[] = [];
+    const X_TOLERANCE = 50; // Pixels allowed for minor alignment drift
 
-    if (hasGutter) {
-      const left = blocks.filter(b => b.frame.x + (b.frame.width / 2) < midPoint).sort((a, b) => a.frame.y - b.frame.y);
-      const right = blocks.filter(b => b.frame.x + (b.frame.width / 2) >= midPoint).sort((a, b) => a.frame.y - b.frame.y);
-      return [...left, ...right].map(b => b.text).join('\n\n');
-    }
+    // Sort by X to process lanes left-to-right
+    const xSortedBlocks = [...blocks].sort((a, b) => a.frame.x - b.frame.x);
 
-    return blocks.sort((a, b) => a.frame.y - b.frame.y).map(b => b.text).join('\n\n');
+    xSortedBlocks.forEach(block => {
+      let foundLane = lanes.find(lane => Math.abs(lane.x - block.frame.x) < X_TOLERANCE);
+      if (foundLane) {
+        foundLane.blocks.push(block);
+      } else {
+        lanes.push({ x: block.frame.x, blocks: [block] });
+      }
+    });
+
+    // 2. Sort within each lane by Y (Top-to-Bottom)
+    // And sort lanes by X (Left-to-Right)
+    const orderedLanes = lanes.sort((a, b) => a.x - b.x);
+
+    let resultText = "";
+    orderedLanes.forEach((lane, index) => {
+      const sortedBlocks = lane.blocks.sort((a, b) => a.frame.y - b.frame.y);
+      const laneText = sortedBlocks.map(b => b.text).join('\n\n');
+
+      resultText += (index > 0 ? '\n\n' : '') + laneText;
+      logger.info(`[PDF] Processed Lane ${index + 1} at X=${lane.x} with ${lane.blocks.length} blocks.`);
+    });
+
+    return resultText;
   }
 
   private cleanDigitalText(text: string): string {
@@ -132,7 +158,7 @@ export class PDFProcessor {
 
       // If model is not loaded but ready on disk, load it now
       if (modelStore.state === 'READY') {
-        setLoading(true, 'Waking up AI engine... (10s)');
+        setLoading(true, 'Waking up the AI... 🧠\n(First time takes about a minute)');
         logger.info('[PDF] AI Model ready on disk but not in memory. Loading for refinement...');
         await modelStore.loadModel();
       }

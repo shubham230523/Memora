@@ -10,6 +10,7 @@ interface ChatState {
   currentConversation: Conversation | null;
   messages: Message[];
   isLoading: boolean;
+  thinkingStep: string;
   startNewChat: () => Promise<void>;
   sendMessage: (content: string) => Promise<void>;
 }
@@ -18,6 +19,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   currentConversation: null,
   messages: [],
   isLoading: false,
+  thinkingStep: '',
 
   startNewChat: async () => {
     set({ isLoading: true });
@@ -182,7 +184,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
       logger.debug('[CHAT] Step 3: Initializing AI provider');
       const aiProvider = getAIProvider();
 
-      // Setup placeholder assistant message
       const assistantMsgId = `assistant-${Date.now()}`;
       const initialAssistantMsg: Message = {
         id: assistantMsgId,
@@ -191,10 +192,17 @@ export const useChatStore = create<ChatState>((set, get) => ({
         content: '',
         createdAt: new Date().toISOString()
       };
-      set(state => ({ messages: [...state.messages, initialAssistantMsg] }));
+      set(state => ({ messages: [...state.messages, initialAssistantMsg], thinkingStep: 'Searching your library...' }));
 
       let fullContent = '';
       let answerFound = false;
+
+      // Friendly Intent Mapper
+      const getFriendlyThinkingStep = (index: number, total: number, source: string) => {
+        if (isJobQuery) return `Checking your professional documents... (${index}/${total})`;
+        if (isRankingQuery) return `Finding your preferences... (${index}/${total})`;
+        return `Reading your saved notes... (${index}/${total})`;
+      };
 
       // Filtering segments for scanning
       const allSegments: { source: string; content: string; densityScore: number }[] = [];
@@ -229,16 +237,18 @@ export const useChatStore = create<ChatState>((set, get) => ({
         if (answerFound) break;
 
         const segment = winnerSegments[i];
+        set({ thinkingStep: getFriendlyThinkingStep(i + 1, winnerSegments.length, segment.source) });
+
         logger.info(`[CHAT] AI Scanning Segment ${i + 1}/${winnerSegments.length} (from ${segment.source})`);
 
-        const scanSystemPrompt = `You are Memora, a personal knowledge assistant.
-Your goal is to answer the user's question using the provided DATA.
+        const scanSystemPrompt = `You are Memora, a helpful and natural knowledge assistant.
+Your ONLY goal is to answer the user's question using the provided DATA.
 
 RULES:
-1. You MUST answer using the information in the DATA.
-2. Speak in a natural, helpful, and human-like way.
-3. If the specific answer is truly not present in the text, you MUST output exactly: "NOT_FOUND_IN_THIS_SEGMENT".
-4. If it's a list, the top item is the favorite.`;
+1. Provide a direct, natural sentence as the answer.
+2. If the answer is truly missing from the DATA, respond with EXACTLY: "NOT_FOUND".
+3. If the user asks for a favorite, the top item in a list (#1) is the winner.
+4. Do not invent dates or facts. Use only what is written.`;
 
         const scanUserPrompt = `DATA SOURCE: ${segment.source}
 CONTENT:
@@ -246,15 +256,14 @@ CONTENT:
 ${segment.content}
 """
 
-USER QUESTION: ${content}
+QUESTION: ${content}
 
-Instruction: If the answer is in the DATA, answer the question naturally. Otherwise, say "NOT_FOUND_IN_THIS_SEGMENT".
-Answer:`;
+Extraction:`;
 
         const response = await aiProvider.generate({
           prompt: scanUserPrompt,
           systemPrompt: scanSystemPrompt,
-          temperature: 0.0 // Return to hard-zero for reliability
+          temperature: 0.0
         });
 
         let cleanResult = response.text.trim();
@@ -262,12 +271,7 @@ Answer:`;
         // Log raw output for troubleshooting
         logger.info(`[CHAT] Segment ${i+1} Raw Output: "${cleanResult.substring(0, 100)}"`);
 
-        // Check if the result is a valid extraction
-        const isRefusal = cleanResult.includes('NOT_FOUND_IN_THIS_SEGMENT') ||
-                         cleanResult.toLowerCase().includes('i don\'t have') ||
-                         cleanResult.length < 3;
-
-        if (cleanResult && !isRefusal) {
+        if (cleanResult && !cleanResult.includes('NOT_FOUND') && cleanResult.length > 2) {
           fullContent = cleanResult;
           answerFound = true;
           logger.info(`[CHAT] Valid answer extracted from segment ${i + 1}`);
@@ -279,6 +283,7 @@ Answer:`;
         fullContent = "I couldn't find that specific information in your current notes.";
       }
 
+      set({ thinkingStep: '' });
       logger.info(`[CHAT] AI Response: "${fullContent.substring(0, 100)}..."`);
 
       // Update UI with the final result (simulating a "stream" for UX consistency)

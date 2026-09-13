@@ -69,7 +69,7 @@ export class LlamaLocalAI implements ILocalAIProvider {
     await this.context.completion(
       {
         prompt: fullPrompt,
-        n_predict: 256, // Reduced for faster response
+        n_predict: 2048, // Increased to allow full document output
         temperature: 0.1, // Low but stable for natural extraction
         stop: ['<|im_end|>', '<|endoftext|>'],
       },
