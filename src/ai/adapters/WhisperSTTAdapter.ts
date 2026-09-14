@@ -25,20 +25,36 @@ export class WhisperSTTAdapter implements STTProvider {
     try {
       if (!this.context) {
         logger.info('[Whisper] Initializing context...');
+        const modelUri = getModelUri();
+        // Native modules often need a plain path on Android
+        const cleanModelPath = modelUri.startsWith('file://') ? modelUri.replace('file://', '') : modelUri;
+
         this.context = await initWhisper({
-          filePath: getModelUri(),
+          filePath: cleanModelPath,
         });
       }
 
-      logger.info(`[Whisper] Transcribing: ${uri}`);
-      const task = this.context.transcribe(uri, {
+      // Remove file:// prefix for Android native compatibility
+      const cleanUri = uri.startsWith('file://') ? uri.replace('file://', '') : uri;
+
+      logger.info(`[Whisper] Starting transcription task for: ${cleanUri}`);
+      const task = this.context.transcribe(cleanUri, {
         language: 'en',
         maxTokens: 1024,
       });
 
-      const { text } = await task.promise;
+      logger.debug('[Whisper] Awaiting transcription promise...');
+      const result = await task.promise;
+      logger.info('[Whisper] Transcription promise resolved');
 
-      return text.trim();
+      if (!result || typeof result.text !== 'string') {
+        logger.warn('[Whisper] Transcription result missing or invalid text property. Full result:', result);
+        return '';
+      }
+
+      const transcribedText = result.text.trim();
+      logger.info(`[Whisper] Transcription successful, length: ${transcribedText.length} chars`);
+      return transcribedText;
     } catch (error) {
       logger.error('[Whisper] Transcription failed', error);
       throw error;

@@ -54,35 +54,29 @@ export class KnowledgePipeline {
 
   async ingestImage(uri: string): Promise<void> {
     const { setLoading } = useKnowledgeStore.getState();
+    logger.info(`[KnowledgePipeline] Starting image ingestion for URI: ${uri}`);
     try {
       setLoading(true, 'Scanning image for text... 👁️');
       const text = await Platform.OCR.recognizeText(uri);
 
       if (!text || text.trim().length === 0) {
+        logger.warn('[KnowledgePipeline] OCR failed to find any text in image');
         throw new Error('No text found in this image.');
       }
 
-      console.log('--- IMAGE OCR EXTRACTION SUCCESS ---');
-      console.log('--- EXTRACTED TEXT START ---');
-      console.log(text);
-      console.log('--- EXTRACTED TEXT END ---');
-      console.log('---------------------------------------');
+      logger.info(`[KnowledgePipeline] OCR raw success, length: ${text.length} chars`);
 
       setLoading(true, 'Cleaning up noise... ✨');
       const refinedText = await ocrRefiner.refine(text);
+      logger.info(`[KnowledgePipeline] AI Refinement complete, length: ${refinedText.length} chars`);
 
-      if (refinedText !== text) {
-        console.log('--- AI REFINEMENT SUCCESS ---');
-        console.log('--- CLEANED TEXT START ---');
-        console.log(refinedText);
-        console.log('--- CLEANED TEXT END ---');
-        console.log('---------------------------------------');
-      }
-
+      setLoading(true, 'Creating note... 📝');
       const note = await noteRepository.create('Scanned Image', refinedText, KnowledgeType.IMAGE);
 
       setLoading(true, 'Indexing knowledge... ✨');
       const chunks = this.chunkText(refinedText, 1000);
+      logger.info(`[KnowledgePipeline] Indexing image knowledge with ${chunks.length} chunks`);
+
       await chunkRepository.saveChunks(chunks.map((content, index) => ({
         knowledgeItemId: note.id,
         content,
@@ -93,27 +87,29 @@ export class KnowledgePipeline {
       logger.info(`Successfully ingested Image via OCR with ${chunks.length} chunks`);
     } catch (error) {
       setLoading(false);
-      logger.error('Failed to ingest image', error);
+      logger.error('[KnowledgePipeline] Failed to ingest image', error);
       throw error;
     }
   }
 
   async ingestVoice(uri: string): Promise<void> {
     const { setLoading } = useKnowledgeStore.getState();
+    logger.info(`[KnowledgePipeline] Starting voice ingestion for URI: ${uri}`);
     try {
       setLoading(true, 'Transcribing audio... 🎙️');
       const text = await voiceProcessor.transcribe(uri);
 
-      console.log('--- VOICE TRANSCRIPTION SUCCESS ---');
-      console.log('--- EXTRACTED TEXT START ---');
-      console.log(text);
-      console.log('--- EXTRACTED TEXT END ---');
-      console.log('---------------------------------------');
+      logger.info(`[KnowledgePipeline] Transcription successful, length: ${text.length} chars`);
+      logger.debug(`[KnowledgePipeline] Transcribed text: "${text.substring(0, 100)}..."`);
 
+      setLoading(true, 'Creating note... 📝');
       const note = await noteRepository.create('Voice Note', text, KnowledgeType.VOICE);
+      logger.info(`[KnowledgePipeline] Note created with ID: ${note.id}`);
 
       setLoading(true, 'Indexing voice knowledge... ✨');
       const chunks = this.chunkText(text, 1000);
+      logger.info(`[KnowledgePipeline] Splitting text into ${chunks.length} chunks`);
+
       await chunkRepository.saveChunks(chunks.map((content, index) => ({
         knowledgeItemId: note.id,
         content,
@@ -124,7 +120,7 @@ export class KnowledgePipeline {
       logger.info(`Successfully ingested Voice Note with ${chunks.length} chunks`);
     } catch (error) {
       setLoading(false);
-      logger.error('Failed to ingest voice', error);
+      logger.error('[KnowledgePipeline] Failed to ingest voice recording', error);
       throw error;
     }
   }
