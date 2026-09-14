@@ -55,10 +55,13 @@ export class PDFProcessor {
                   languages: ['en']
                 });
 
-                if (result && result.blocks && result.blocks.length > 0) {
-                  finalText = this.sortByReadingOrder(result.blocks);
+                if (result.success && result.fullText) {
+                  // For PDFs, we use the fullText directly if we want a simple flow,
+                  // or we can attempt to extract blocks from result.pages if we want layout-aware sorting.
+                  // For now, let's use the fullText which is already concatenated.
+                  finalText = result.fullText;
                   extractionMethod = "VISION";
-                  logger.info(`[PDF] Vision Success with ${attempt.name}: Found ${result.blocks.length} blocks.`);
+                  logger.info(`[PDF] Vision Success with ${attempt.name}: Found ${finalText.length} characters.`);
                 } else {
                   // Small delay to allow ML Kit model download if pending
                   await new Promise(r => setTimeout(r, 1000));
@@ -108,6 +111,9 @@ export class PDFProcessor {
       console.log('--- INDUSTRY PDF EXTRACTION SUCCESS ---');
       console.log(`Method: ${extractionMethod}`);
       console.log(`Initial Size: ${finalText.length} chars`);
+      console.log('--- EXTRACTED TEXT START ---');
+      console.log(finalText);
+      console.log('--- EXTRACTED TEXT END ---');
       console.log('---------------------------------------');
 
       return finalText;

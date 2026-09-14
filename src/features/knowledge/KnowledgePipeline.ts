@@ -49,11 +49,35 @@ export class KnowledgePipeline {
   }
 
   async ingestImage(uri: string): Promise<void> {
+    const { setLoading } = useKnowledgeStore.getState();
     try {
+      setLoading(true, 'Scanning image for text... 👁️');
       const text = await Platform.OCR.recognizeText(uri);
-      await noteRepository.create('OCR Result', text, KnowledgeType.IMAGE);
-      logger.info('Successfully ingested Image via OCR');
+
+      if (!text || text.trim().length === 0) {
+        throw new Error('No text found in this image.');
+      }
+
+      console.log('--- IMAGE OCR EXTRACTION SUCCESS ---');
+      console.log('--- EXTRACTED TEXT START ---');
+      console.log(text);
+      console.log('--- EXTRACTED TEXT END ---');
+      console.log('---------------------------------------');
+
+      const note = await noteRepository.create('Scanned Image', text, KnowledgeType.IMAGE);
+
+      setLoading(true, 'Indexing knowledge... ✨');
+      const chunks = this.chunkText(text, 200);
+      await chunkRepository.saveChunks(chunks.map((content, index) => ({
+        knowledgeItemId: note.id,
+        content,
+        index,
+      })));
+
+      setLoading(false);
+      logger.info(`Successfully ingested Image via OCR with ${chunks.length} chunks`);
     } catch (error) {
+      setLoading(false);
       logger.error('Failed to ingest image', error);
       throw error;
     }
