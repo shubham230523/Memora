@@ -7,7 +7,9 @@ import { useTheme } from '@/design/theme/ThemeContext';
 import { Icon } from '@/design/components/Icon';
 import { Platform } from '@/platform/Platform';
 import { knowledgePipeline } from '@/features/knowledge/KnowledgePipeline';
+import { useKnowledgeStore } from '@/features/knowledge/KnowledgeStore';
 import { logger } from '@/core/logging/Logger';
+import { Loading } from '@/design/components/Loading';
 
 export default function VoiceRecordScreen() {
   const { theme, isDark } = useTheme();
@@ -15,6 +17,7 @@ export default function VoiceRecordScreen() {
   const insets = useSafeAreaInsets();
   const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
+  const { isLoading, loadingLabel } = useKnowledgeStore();
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -138,6 +141,12 @@ export default function VoiceRecordScreen() {
           </View>
         )}
       </View>
+
+      {isLoading && (
+        <View style={[StyleSheet.absoluteFill, styles.loadingOverlay, { backgroundColor: theme.colors.background + 'CC' }]}>
+          <Loading message={loadingLabel} />
+        </View>
+      )}
     </View>
   );
 }
@@ -204,5 +213,10 @@ const styles = StyleSheet.create({
   supportText: {
     marginTop: 8,
     fontSize: 12,
+  },
+  loadingOverlay: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
   },
 });

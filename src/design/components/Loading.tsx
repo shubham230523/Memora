@@ -1,22 +1,21 @@
 import React from 'react';
 import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
-import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
+import { useTheme } from '../theme/ThemeContext';
 
 interface LoadingProps {
   message?: string;
 }
 
 export const Loading: React.FC<LoadingProps> = ({ message }) => {
-  const isDark = false; // TODO: Hook into theme
-  const themeColors = isDark ? colors.dark : colors.light;
+  const { theme } = useTheme();
 
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color={themeColors.primary} />
+      <ActivityIndicator size="large" color={theme.colors.primary} />
       {message && (
-        <Text style={[styles.text, { color: themeColors.textSecondary }]}>
+        <Text style={[styles.text, { color: theme.colors.textSecondary }]}>
           {message}
         </Text>
       )}
