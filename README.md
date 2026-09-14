@@ -10,7 +10,7 @@ Memora is a local-first personal AI knowledge base built with React Native and E
   - **Voice**: Record and transcribe audio locally using **OpenAI Whisper** or via Gemini cloud fallback.
   - **PDFs**: Dual-engine ingestion (Digital + Vision OCR) for robust text extraction from any document.
   - **Images**: OCR-powered document scanning using **Google ML Kit**.
-  - **Web**: Instant extraction of clean text and metadata from any URL.
+  - **Notes**: Create and organize rich text notes directly within the app for quick knowledge capture.
 - **Privacy-First AI**:
   - **Local LLM**: Run **Qwen 2.5 1.5B** directly on your device using `llama.rn` (JSI-powered).
   - **Hybrid Inference**: Switch between **LOCAL** (privacy) and **CLOUD** (speed/power via Gemini) modes seamlessly.
