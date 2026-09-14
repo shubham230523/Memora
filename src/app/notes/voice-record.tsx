@@ -60,6 +60,29 @@ export default function VoiceRecordScreen() {
     }
   };
 
+  const pickAudioFile = async () => {
+    try {
+      const result = await Platform.FilePicker.pickDocument({
+        type: ['audio/wav', 'audio/x-wav', 'audio/wave']
+      });
+
+      if (result) {
+        const isWav = result.name.toLowerCase().endsWith('.wav');
+        if (!isWav) {
+          Alert.alert('Unsupported Format', 'Only .wav files are supported for local transcription.');
+          return;
+        }
+
+        await knowledgePipeline.ingestVoice(result.uri);
+        Alert.alert('Success', 'Audio file processed and transcribed');
+        router.back();
+      }
+    } catch (error) {
+      logger.error('Failed to pick audio file', error);
+      Alert.alert('Error', 'Failed to process audio file');
+    }
+  };
+
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -97,6 +120,23 @@ export default function VoiceRecordScreen() {
         >
           <Icon name={isRecording ? "stop" : "microphone"} size={40} color="#FFF" />
         </TouchableOpacity>
+
+        {!isRecording && (
+          <View style={styles.footer}>
+            <TouchableOpacity
+              onPress={pickAudioFile}
+              style={[styles.secondaryButton, { borderColor: theme.colors.primary }]}
+            >
+              <Icon name="file-upload" size={24} color={theme.colors.primary} />
+              <Text style={[styles.secondaryButtonText, { color: theme.colors.primary }]}>
+                Select .wav file
+              </Text>
+            </TouchableOpacity>
+            <Text style={[styles.supportText, { color: theme.colors.textSecondary }]}>
+              (Only .wav supported)
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   );
@@ -144,5 +184,25 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
+    marginBottom: 40,
+  },
+  footer: {
+    alignItems: 'center',
+  },
+  secondaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  secondaryButtonText: {
+    marginLeft: 8,
+    fontWeight: '600',
+  },
+  supportText: {
+    marginTop: 8,
+    fontSize: 12,
   },
 });

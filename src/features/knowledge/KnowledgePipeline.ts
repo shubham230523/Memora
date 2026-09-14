@@ -66,6 +66,10 @@ export class KnowledgePipeline {
 
       logger.info(`[KnowledgePipeline] OCR raw success, length: ${text.length} chars`);
 
+      console.log('--- IMAGE OCR CONTENT ---');
+      console.log(text);
+      console.log('-------------------------');
+
       setLoading(true, 'Cleaning up noise... ✨');
       const refinedText = await ocrRefiner.refine(text);
       logger.info(`[KnowledgePipeline] AI Refinement complete, length: ${refinedText.length} chars`);
@@ -100,7 +104,10 @@ export class KnowledgePipeline {
       const text = await voiceProcessor.transcribe(uri);
 
       logger.info(`[KnowledgePipeline] Transcription successful, length: ${text.length} chars`);
-      logger.debug(`[KnowledgePipeline] Transcribed text: "${text.substring(0, 100)}..."`);
+
+      console.log('--- VOICE TRANSCRIPTION CONTENT ---');
+      console.log(text);
+      console.log('-----------------------------------');
 
       setLoading(true, 'Creating note... 📝');
       const note = await noteRepository.create('Voice Note', text, KnowledgeType.VOICE);

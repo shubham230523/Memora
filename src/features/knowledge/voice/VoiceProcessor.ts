@@ -31,7 +31,14 @@ export class VoiceProcessor {
 
       if (inferenceMode === 'LOCAL') {
         logger.debug(`[VoiceProcessor] Invoking local Whisper adapter for URI: ${uri}`);
-        return await whisperSTTAdapter.transcribe(uri);
+        const transcription = await whisperSTTAdapter.transcribe(uri);
+
+        if (!transcription || transcription.trim().length === 0) {
+          logger.warn('[VoiceProcessor] Whisper returned empty transcription');
+          return "No speech detected in this recording.";
+        }
+
+        return transcription;
       } else {
         logger.info('[VoiceProcessor] Falling back to Gemini cloud transcription');
         // Cloud Fallback (Gemini)

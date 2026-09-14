@@ -47,12 +47,15 @@ export class WhisperSTTAdapter implements STTProvider {
       const result = await task.promise;
       logger.info('[Whisper] Transcription promise resolved');
 
-      if (!result || typeof result.text !== 'string') {
-        logger.warn('[Whisper] Transcription result missing or invalid text property. Full result:', result);
+      // The native module returns the full text in the 'result' property (observed in logs)
+      // but we handle 'text' as well for broad compatibility.
+      const transcribedText = (result?.result || result?.text || '').trim();
+
+      if (!transcribedText) {
+        logger.warn('[Whisper] Transcription result empty or invalid. Full result:', result);
         return '';
       }
 
-      const transcribedText = result.text.trim();
       logger.info(`[Whisper] Transcription successful, length: ${transcribedText.length} chars`);
       return transcribedText;
     } catch (error) {
