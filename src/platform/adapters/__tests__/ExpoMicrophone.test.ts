@@ -15,6 +15,11 @@ jest.mock('expo-audio', () => ({
       pause: jest.fn(),
       uri: 'uri'
     })),
+    AudioStream: jest.fn().mockImplementation(() => ({
+      start: jest.fn(),
+      stop: jest.fn(),
+      addListener: jest.fn(),
+    })),
   },
   RecordingPresets: {
     HIGH_QUALITY: {},
@@ -48,17 +53,23 @@ describe('ExpoMicrophone', () => {
   it('startRecording should create recorder and start', async () => {
     await microphone.startRecording();
     expect(Audio.setAudioModeAsync).toHaveBeenCalled();
-    expect(Audio.AudioModule.AudioRecorder).toHaveBeenCalled();
+    // In SDK 57 test environment, AudioStream is preferred
+    expect(Audio.AudioModule.AudioStream).toHaveBeenCalled();
   });
 
   it('stopRecording should stop and return URI', async () => {
     await microphone.startRecording();
     const uri = await microphone.stopRecording();
-    expect(uri).toBe('uri');
+    expect(uri).toContain('.wav');
   });
 
   it('stopRecording should return null if no recording active', async () => {
     const uri = await microphone.stopRecording();
     expect(uri).toBeNull();
+  });
+
+  it('should use AudioStream if available', async () => {
+    await microphone.startRecording();
+    expect(Audio.AudioModule.AudioStream).toHaveBeenCalled();
   });
 });

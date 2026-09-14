@@ -110,10 +110,18 @@ export class KnowledgePipeline {
       console.log('--- EXTRACTED TEXT END ---');
       console.log('---------------------------------------');
 
-      await noteRepository.create('Voice Note', text, KnowledgeType.VOICE);
+      const note = await noteRepository.create('Voice Note', text, KnowledgeType.VOICE);
+
+      setLoading(true, 'Indexing voice knowledge... ✨');
+      const chunks = this.chunkText(text, 1000);
+      await chunkRepository.saveChunks(chunks.map((content, index) => ({
+        knowledgeItemId: note.id,
+        content,
+        index,
+      })));
 
       setLoading(false);
-      logger.info('Successfully ingested Voice Note');
+      logger.info(`Successfully ingested Voice Note with ${chunks.length} chunks`);
     } catch (error) {
       setLoading(false);
       logger.error('Failed to ingest voice', error);
@@ -122,12 +130,26 @@ export class KnowledgePipeline {
   }
 
   async ingestWebpage(url: string): Promise<void> {
+    const { setLoading } = useKnowledgeStore.getState();
     try {
+      setLoading(true, 'Fetching webpage... 🌐');
       const text = await webProcessor.process(url);
       const metadata = await webProcessor.extractMetadata(url);
-      await noteRepository.create(`Web: ${metadata.title}`, text, KnowledgeType.WEBPAGE);
-      logger.info(`Successfully ingested Webpage: ${url}`);
+
+      const note = await noteRepository.create(`Web: ${metadata.title}`, text, KnowledgeType.WEBPAGE);
+
+      setLoading(true, 'Indexing web knowledge... ✨');
+      const chunks = this.chunkText(text, 1000);
+      await chunkRepository.saveChunks(chunks.map((content, index) => ({
+        knowledgeItemId: note.id,
+        content,
+        index,
+      })));
+
+      setLoading(false);
+      logger.info(`Successfully ingested Webpage: ${url} with ${chunks.length} chunks`);
     } catch (error) {
+      setLoading(false);
       logger.error(`Failed to ingest webpage: ${url}`, error);
       throw error;
     }

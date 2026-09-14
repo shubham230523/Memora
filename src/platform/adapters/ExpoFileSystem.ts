@@ -68,6 +68,15 @@ export class ExpoFileSystem implements IFileSystemProvider {
     }
   }
 
+  async readAsBase64(fileUri: string): Promise<string> {
+    try {
+      return await FileSystem.readAsStringAsync(fileUri, { encoding: FileSystem.EncodingType.Base64 });
+    } catch (error) {
+      logger.error('Failed to read file as base64', error);
+      throw error;
+    }
+  }
+
   async getContentUri(fileUri: string): Promise<string> {
     try {
       // In SDK 57, getContentUriAsync is available on Android

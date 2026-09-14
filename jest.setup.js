@@ -104,7 +104,7 @@ jest.mock('expo-file-system', () => ({
     downloadAsync: jest.fn().mockResolvedValue({ uri: 'file:///mock/file' }),
   })),
   getContentUriAsync: jest.fn(async (uri) => uri),
-  EncodingType: { UTF8: 'utf8' },
+  EncodingType: { UTF8: 'utf8', Base64: 'base64' },
 }));
 
 jest.mock('expo-file-system/legacy', () => ({
@@ -121,10 +121,17 @@ jest.mock('expo-file-system/legacy', () => ({
     downloadAsync: jest.fn().mockResolvedValue({ uri: 'file:///mock/file' }),
   })),
   getContentUriAsync: jest.fn(async (uri) => uri),
-  EncodingType: { UTF8: 'utf8' },
+  EncodingType: { UTF8: 'utf8', Base64: 'base64' },
 }), { virtual: true });
 
 jest.mock('expo-background-fetch', () => ({
   registerTaskAsync: jest.fn(),
   BackgroundFetchResult: { NewData: 1, NoData: 2, Failed: 3 },
 }));
+
+jest.mock('whisper.rn', () => ({
+  initWhisper: jest.fn().mockResolvedValue({
+    transcribe: jest.fn().mockResolvedValue({ text: 'Mock transcription' }),
+    release: jest.fn(),
+  }),
+}), { virtual: true });

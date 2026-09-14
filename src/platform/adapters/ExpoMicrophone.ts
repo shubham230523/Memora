@@ -1,5 +1,8 @@
 import { IMicrophoneProvider } from '../interfaces/Microphone';
 import { logger } from '../../core/logging/Logger';
+import { createWavHeader } from '../../shared/utils/WavHelper';
+import { Buffer } from 'buffer';
+import * as FileSystem from 'expo-file-system/legacy';
 
 // SDK 57 uses expo-audio
 let Audio: any;
@@ -11,6 +14,9 @@ try {
 
 export class ExpoMicrophone implements IMicrophoneProvider {
   private recorder: any = null;
+  private stream: any = null;
+  private audioChunks: Buffer[] = [];
+  private isStreamMode = false;
 
   async requestPermissions(): Promise<boolean> {
     if (!Audio) return false;
@@ -50,7 +56,26 @@ export class ExpoMicrophone implements IMicrophoneProvider {
       }
 
       // Modern API: createRecorder
-      if (Audio.AudioModule?.AudioRecorder) {
+      // Use AudioStream for high-compatibility PCM/WAV (Required for Local Whisper)
+      if (Audio.AudioModule?.AudioStream) {
+        logger.info('[Microphone] Starting PCM Stream (16kHz Mono)...');
+        this.isStreamMode = true;
+        this.audioChunks = [];
+
+        this.stream = new Audio.AudioModule.AudioStream({
+          sampleRate: 16000,
+          channels: 1,
+          encoding: 'int16',
+        });
+
+        this.stream.addListener('audioStreamBuffer', (buffer: any) => {
+          this.audioChunks.push(Buffer.from(buffer.data));
+        });
+
+        await this.stream.start();
+      }
+      else if (Audio.AudioModule?.AudioRecorder) {
+        this.isStreamMode = false;
         this.recorder = new Audio.AudioModule.AudioRecorder(
           Audio.RecordingPresets?.HIGH_QUALITY || {}
         );
@@ -59,6 +84,7 @@ export class ExpoMicrophone implements IMicrophoneProvider {
       }
       // Legacy fallback
       else if (Audio.Recording?.createAsync) {
+        this.isStreamMode = false;
         const { recording } = await Audio.Recording.createAsync(
           Audio.RecordingOptionsPresets?.HIGH_QUALITY || {}
         );
@@ -73,8 +99,30 @@ export class ExpoMicrophone implements IMicrophoneProvider {
   }
 
   async stopRecording(): Promise<string | null> {
-    if (!this.recorder) return null;
     try {
+      if (this.isStreamMode && this.stream) {
+        this.stream.stop();
+
+        const dataBuffer = Buffer.concat(this.audioChunks);
+        const header = createWavHeader(dataBuffer.length, 16000, 1);
+        const wavFile = Buffer.concat([header, dataBuffer]);
+
+        const filename = `recording_${Date.now()}.wav`;
+        const fileUri = `${FileSystem.cacheDirectory}${filename}`;
+
+        // Write the WAV file to storage
+        await FileSystem.writeAsStringAsync(fileUri, wavFile.toString('base64'), {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+
+        logger.info(`[Microphone] WAV Recording saved: ${fileUri} (${wavFile.length} bytes)`);
+
+        this.stream = null;
+        this.audioChunks = [];
+        return fileUri;
+      }
+
+      if (!this.recorder) return null;
       let uri: string | null = null;
 
       // Modern stop
@@ -100,6 +148,10 @@ export class ExpoMicrophone implements IMicrophoneProvider {
   }
 
   async pauseRecording(): Promise<void> {
+    if (this.isStreamMode) {
+      logger.warn('Pause not supported in PCM Stream mode');
+      return;
+    }
     if (!this.recorder) return;
     if (typeof this.recorder.pause === 'function') {
       this.recorder.pause();
@@ -109,6 +161,7 @@ export class ExpoMicrophone implements IMicrophoneProvider {
   }
 
   async resumeRecording(): Promise<void> {
+    if (this.isStreamMode) return;
     if (!this.recorder) return;
     if (typeof this.recorder.record === 'function') {
       this.recorder.record();

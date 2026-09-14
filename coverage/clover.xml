@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1789362469816" clover="3.2.0">
-  <project timestamp="1789362469816" name="All files">
-    <metrics statements="884" coveredstatements="751" conditionals="377" coveredconditionals="283" methods="187" coveredmethods="159" elements="1448" coveredelements="1193" complexity="0" loc="884" ncloc="884" packages="26" files="44" classes="44"/>
+<coverage generated="1789373620448" clover="3.2.0">
+  <project timestamp="1789373620448" name="All files">
+    <metrics statements="1060" coveredstatements="875" conditionals="460" coveredconditionals="315" methods="206" coveredmethods="172" elements="1726" coveredelements="1362" complexity="0" loc="1060" ncloc="1060" packages="26" files="48" classes="48"/>
     <package name="ai">
-      <metrics statements="67" coveredstatements="54" conditionals="24" coveredconditionals="19" methods="15" coveredmethods="13"/>
+      <metrics statements="95" coveredstatements="80" conditionals="28" coveredconditionals="21" methods="25" coveredmethods="22"/>
       <file name="AIModelManager.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\ai\AIModelManager.ts">
         <metrics statements="62" coveredstatements="49" conditionals="22" coveredconditionals="17" methods="14" coveredmethods="12"/>
         <line num="15" count="3" type="stmt"/>
@@ -77,9 +77,60 @@
         <line num="10" count="2" type="stmt"/>
         <line num="11" count="2" type="cond" truecount="2" falsecount="0"/>
       </file>
+      <file name="WhisperModelManager.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\ai\WhisperModelManager.ts">
+        <metrics statements="28" coveredstatements="26" conditionals="4" coveredconditionals="2" methods="10" coveredmethods="9"/>
+        <line num="12" count="2" type="stmt"/>
+        <line num="13" count="2" type="stmt"/>
+        <line num="25" count="2" type="stmt"/>
+        <line num="27" count="2" type="stmt"/>
+        <line num="32" count="6" type="stmt"/>
+        <line num="35" count="1" type="stmt"/>
+        <line num="36" count="1" type="stmt"/>
+        <line num="37" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="41" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="43" count="2" type="stmt"/>
+        <line num="44" count="2" type="stmt"/>
+        <line num="46" count="2" type="stmt"/>
+        <line num="47" count="2" type="stmt"/>
+        <line num="48" count="2" type="stmt"/>
+        <line num="52" count="1" type="stmt"/>
+        <line num="53" count="1" type="stmt"/>
+        <line num="56" count="1" type="stmt"/>
+        <line num="57" count="1" type="stmt"/>
+        <line num="59" count="1" type="stmt"/>
+        <line num="60" count="1" type="stmt"/>
+        <line num="65" count="1" type="stmt"/>
+        <line num="66" count="1" type="stmt"/>
+        <line num="67" count="1" type="stmt"/>
+        <line num="69" count="0" type="stmt"/>
+        <line num="75" count="2" type="stmt"/>
+        <line num="76" count="2" type="stmt"/>
+        <line num="77" count="16" type="stmt"/>
+        <line num="78" count="0" type="stmt"/>
+      </file>
     </package>
     <package name="ai.adapters">
-      <metrics statements="25" coveredstatements="24" conditionals="12" coveredconditionals="12" methods="6" coveredmethods="5"/>
+      <metrics statements="64" coveredstatements="59" conditionals="27" coveredconditionals="23" methods="10" coveredmethods="9"/>
+      <file name="GeminiSTTAdapter.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\ai\adapters\GeminiSTTAdapter.ts">
+        <metrics statements="17" coveredstatements="17" conditionals="7" coveredconditionals="6" methods="2" coveredmethods="2"/>
+        <line num="9" count="4" type="stmt"/>
+        <line num="13" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="14" count="1" type="stmt"/>
+        <line num="17" count="2" type="stmt"/>
+        <line num="19" count="2" type="stmt"/>
+        <line num="20" count="2" type="stmt"/>
+        <line num="43" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="44" count="1" type="stmt"/>
+        <line num="45" count="1" type="stmt"/>
+        <line num="46" count="1" type="stmt"/>
+        <line num="49" count="1" type="stmt"/>
+        <line num="50" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="52" count="1" type="stmt"/>
+        <line num="53" count="1" type="stmt"/>
+        <line num="55" count="1" type="stmt"/>
+        <line num="56" count="1" type="stmt"/>
+        <line num="61" count="1" type="stmt"/>
+      </file>
       <file name="LocalAIProvider.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\ai\adapters\LocalAIProvider.ts">
         <metrics statements="14" coveredstatements="14" conditionals="4" coveredconditionals="4" methods="2" coveredmethods="2"/>
         <line num="8" count="2" type="stmt"/>
@@ -111,6 +162,31 @@
         <line num="52" count="1" type="stmt"/>
         <line num="53" count="1" type="stmt"/>
       </file>
+      <file name="WhisperSTTAdapter.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\ai\adapters\WhisperSTTAdapter.ts">
+        <metrics statements="22" coveredstatements="18" conditionals="8" coveredconditionals="5" methods="2" coveredmethods="2"/>
+        <line num="6" count="1" type="stmt"/>
+        <line num="7" count="1" type="stmt"/>
+        <line num="9" count="0" type="stmt"/>
+        <line num="13" count="4" type="stmt"/>
+        <line num="16" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="17" count="0" type="stmt"/>
+        <line num="20" count="3" type="stmt"/>
+        <line num="21" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="22" count="1" type="stmt"/>
+        <line num="25" count="2" type="stmt"/>
+        <line num="26" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="27" count="2" type="stmt"/>
+        <line num="28" count="2" type="stmt"/>
+        <line num="33" count="2" type="stmt"/>
+        <line num="34" count="2" type="stmt"/>
+        <line num="39" count="2" type="stmt"/>
+        <line num="41" count="0" type="stmt"/>
+        <line num="42" count="0" type="stmt"/>
+        <line num="47" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="48" count="1" type="stmt"/>
+        <line num="49" count="1" type="stmt"/>
+        <line num="54" count="1" type="stmt"/>
+      </file>
     </package>
     <package name="app">
       <metrics statements="10" coveredstatements="9" conditionals="8" coveredconditionals="7" methods="1" coveredmethods="1"/>
@@ -132,36 +208,36 @@
       <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
       <file name="appConfig.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\core\config\appConfig.ts">
         <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
-        <line num="3" count="18" type="stmt"/>
+        <line num="3" count="20" type="stmt"/>
       </file>
       <file name="env.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\core\config\env.ts">
         <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
-        <line num="3" count="18" type="stmt"/>
-        <line num="20" count="18" type="stmt"/>
+        <line num="3" count="20" type="stmt"/>
+        <line num="20" count="20" type="stmt"/>
       </file>
     </package>
     <package name="core.errors">
       <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
       <file name="AppError.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\core\errors\AppError.ts">
         <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
-        <line num="21" count="3" type="stmt"/>
-        <line num="22" count="3" type="stmt"/>
-        <line num="23" count="3" type="stmt"/>
+        <line num="21" count="5" type="stmt"/>
+        <line num="22" count="5" type="stmt"/>
+        <line num="23" count="5" type="stmt"/>
       </file>
     </package>
     <package name="core.logging">
       <metrics statements="29" coveredstatements="27" conditionals="19" coveredconditionals="17" methods="11" coveredmethods="10"/>
       <file name="Logger.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\core\logging\Logger.ts">
         <metrics statements="29" coveredstatements="27" conditionals="19" coveredconditionals="17" methods="11" coveredmethods="10"/>
-        <line num="5" count="18" type="stmt"/>
-        <line num="16" count="18" type="stmt"/>
-        <line num="20" count="105" type="cond" truecount="2" falsecount="0"/>
-        <line num="21" count="94" type="stmt"/>
-        <line num="22" count="94" type="stmt"/>
-        <line num="23" count="94" type="stmt"/>
-        <line num="28" count="12" type="cond" truecount="1" falsecount="1"/>
-        <line num="30" count="12" type="cond" truecount="2" falsecount="0"/>
-        <line num="31" count="9" type="stmt"/>
+        <line num="5" count="20" type="stmt"/>
+        <line num="16" count="20" type="stmt"/>
+        <line num="20" count="109" type="cond" truecount="2" falsecount="0"/>
+        <line num="21" count="98" type="stmt"/>
+        <line num="22" count="98" type="stmt"/>
+        <line num="23" count="98" type="stmt"/>
+        <line num="28" count="13" type="cond" truecount="1" falsecount="1"/>
+        <line num="30" count="13" type="cond" truecount="2" falsecount="0"/>
+        <line num="31" count="10" type="stmt"/>
         <line num="38" count="3" type="cond" truecount="4" falsecount="0"/>
         <line num="41" count="2" type="cond" truecount="1" falsecount="1"/>
         <line num="42" count="0" type="stmt"/>
@@ -178,10 +254,10 @@
         <line num="63" count="0" type="stmt"/>
         <line num="66" count="2" type="stmt"/>
         <line num="70" count="11" type="stmt"/>
-        <line num="74" count="78" type="stmt"/>
+        <line num="74" count="81" type="stmt"/>
         <line num="78" count="8" type="stmt"/>
-        <line num="82" count="8" type="stmt"/>
-        <line num="86" count="18" type="stmt"/>
+        <line num="82" count="9" type="stmt"/>
+        <line num="86" count="20" type="stmt"/>
       </file>
     </package>
     <package name="database">
@@ -448,7 +524,7 @@
       </file>
     </package>
     <package name="features.knowledge">
-      <metrics statements="139" coveredstatements="133" conditionals="46" coveredconditionals="30" methods="35" coveredmethods="35"/>
+      <metrics statements="158" coveredstatements="150" conditionals="46" coveredconditionals="30" methods="37" coveredmethods="37"/>
       <file name="ChunkRepository.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\features\knowledge\ChunkRepository.ts">
         <metrics statements="9" coveredstatements="9" conditionals="4" coveredconditionals="2" methods="4" coveredmethods="4"/>
         <line num="7" count="1" type="stmt"/>
@@ -462,7 +538,7 @@
         <line num="33" count="4" type="stmt"/>
       </file>
       <file name="KnowledgePipeline.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\features\knowledge\KnowledgePipeline.ts">
-        <metrics statements="64" coveredstatements="60" conditionals="10" coveredconditionals="9" methods="7" coveredmethods="7"/>
+        <metrics statements="83" coveredstatements="77" conditionals="10" coveredconditionals="9" methods="9" coveredmethods="9"/>
         <line num="14" count="2" type="stmt"/>
         <line num="15" count="2" type="stmt"/>
         <line num="16" count="2" type="stmt"/>
@@ -478,13 +554,13 @@
         <line num="38" count="1" type="stmt"/>
         <line num="39" count="1" type="stmt"/>
         <line num="40" count="1" type="stmt"/>
-        <line num="45" count="2" type="stmt"/>
-        <line num="46" count="2" type="stmt"/>
-        <line num="47" count="2" type="stmt"/>
-        <line num="48" count="2" type="stmt"/>
-        <line num="49" count="2" type="stmt"/>
-        <line num="50" count="2" type="stmt"/>
-        <line num="52" count="2" type="stmt"/>
+        <line num="45" count="4" type="stmt"/>
+        <line num="46" count="4" type="stmt"/>
+        <line num="47" count="4" type="stmt"/>
+        <line num="48" count="4" type="stmt"/>
+        <line num="49" count="4" type="stmt"/>
+        <line num="50" count="4" type="stmt"/>
+        <line num="52" count="4" type="stmt"/>
         <line num="56" count="2" type="stmt"/>
         <line num="57" count="2" type="stmt"/>
         <line num="58" count="2" type="stmt"/>
@@ -517,16 +593,35 @@
         <line num="103" count="1" type="stmt"/>
         <line num="104" count="1" type="stmt"/>
         <line num="105" count="1" type="stmt"/>
-        <line num="107" count="0" type="stmt"/>
-        <line num="108" count="0" type="stmt"/>
+        <line num="107" count="1" type="stmt"/>
+        <line num="108" count="1" type="stmt"/>
+        <line num="109" count="1" type="stmt"/>
+        <line num="110" count="1" type="stmt"/>
+        <line num="111" count="1" type="stmt"/>
         <line num="113" count="1" type="stmt"/>
-        <line num="114" count="1" type="stmt"/>
         <line num="115" count="1" type="stmt"/>
         <line num="116" count="1" type="stmt"/>
         <line num="117" count="1" type="stmt"/>
-        <line num="119" count="0" type="stmt"/>
-        <line num="120" count="0" type="stmt"/>
-        <line num="125" count="1" type="stmt"/>
+        <line num="123" count="1" type="stmt"/>
+        <line num="124" count="1" type="stmt"/>
+        <line num="126" count="0" type="stmt"/>
+        <line num="127" count="0" type="stmt"/>
+        <line num="128" count="0" type="stmt"/>
+        <line num="133" count="1" type="stmt"/>
+        <line num="134" count="1" type="stmt"/>
+        <line num="135" count="1" type="stmt"/>
+        <line num="136" count="1" type="stmt"/>
+        <line num="137" count="1" type="stmt"/>
+        <line num="139" count="1" type="stmt"/>
+        <line num="141" count="1" type="stmt"/>
+        <line num="142" count="1" type="stmt"/>
+        <line num="143" count="1" type="stmt"/>
+        <line num="149" count="1" type="stmt"/>
+        <line num="150" count="1" type="stmt"/>
+        <line num="152" count="0" type="stmt"/>
+        <line num="153" count="0" type="stmt"/>
+        <line num="154" count="0" type="stmt"/>
+        <line num="159" count="1" type="stmt"/>
       </file>
       <file name="KnowledgeRepository.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\features\knowledge\KnowledgeRepository.ts">
         <metrics statements="43" coveredstatements="43" conditionals="27" coveredconditionals="16" methods="14" coveredmethods="14"/>
@@ -577,7 +672,7 @@
       <file name="KnowledgeStore.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\features\knowledge\KnowledgeStore.ts">
         <metrics statements="23" coveredstatements="21" conditionals="5" coveredconditionals="3" methods="10" coveredmethods="10"/>
         <line num="18" count="4" type="stmt"/>
-        <line num="24" count="18" type="cond" truecount="1" falsecount="0"/>
+        <line num="24" count="24" type="cond" truecount="1" falsecount="0"/>
         <line num="27" count="1" type="stmt"/>
         <line num="28" count="1" type="stmt"/>
         <line num="32" count="4" type="stmt"/>
@@ -755,16 +850,29 @@
       </file>
     </package>
     <package name="features.knowledge.voice">
-      <metrics statements="7" coveredstatements="7" conditionals="2" coveredconditionals="2" methods="3" coveredmethods="3"/>
+      <metrics statements="20" coveredstatements="14" conditionals="14" coveredconditionals="9" methods="3" coveredmethods="1"/>
       <file name="VoiceProcessor.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\features\knowledge\voice\VoiceProcessor.ts">
-        <metrics statements="7" coveredstatements="7" conditionals="2" coveredconditionals="2" methods="3" coveredmethods="3"/>
-        <line num="6" count="2" type="stmt"/>
-        <line num="7" count="2" type="cond" truecount="2" falsecount="0"/>
-        <line num="8" count="1" type="stmt"/>
-        <line num="12" count="1" type="stmt"/>
-        <line num="16" count="3" type="stmt"/>
-        <line num="18" count="3" type="stmt"/>
-        <line num="22" count="2" type="stmt"/>
+        <metrics statements="20" coveredstatements="14" conditionals="14" coveredconditionals="9" methods="3" coveredmethods="1"/>
+        <line num="9" count="0" type="stmt"/>
+        <line num="10" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="11" count="0" type="stmt"/>
+        <line num="15" count="0" type="stmt"/>
+        <line num="19" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="21" count="3" type="stmt"/>
+        <line num="22" count="3" type="stmt"/>
+        <line num="24" count="3" type="stmt"/>
+        <line num="25" count="3" type="cond" truecount="2" falsecount="0"/>
+        <line num="26" count="1" type="stmt"/>
+        <line num="30" count="2" type="stmt"/>
+        <line num="33" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="34" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="37" count="2" type="stmt"/>
+        <line num="39" count="2" type="cond" truecount="4" falsecount="0"/>
+        <line num="40" count="1" type="stmt"/>
+        <line num="43" count="1" type="stmt"/>
+        <line num="46" count="0" type="stmt"/>
+        <line num="47" count="0" type="stmt"/>
+        <line num="52" count="1" type="stmt"/>
       </file>
     </package>
     <package name="features.knowledge.web">
@@ -824,32 +932,32 @@
       <metrics statements="10" coveredstatements="9" conditionals="0" coveredconditionals="0" methods="9" coveredmethods="8"/>
       <file name="SettingsStore.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\features\settings\SettingsStore.ts">
         <metrics statements="10" coveredstatements="9" conditionals="0" coveredconditionals="0" methods="9" coveredmethods="8"/>
-        <line num="14" count="4" type="stmt"/>
-        <line num="16" count="4" type="stmt"/>
+        <line num="14" count="5" type="stmt"/>
+        <line num="16" count="5" type="stmt"/>
         <line num="18" count="1" type="stmt"/>
-        <line num="20" count="1" type="stmt"/>
-        <line num="24" count="4" type="stmt"/>
-        <line num="25" count="4" type="stmt"/>
-        <line num="26" count="8" type="stmt"/>
+        <line num="20" count="2" type="stmt"/>
+        <line num="24" count="5" type="stmt"/>
+        <line num="25" count="5" type="stmt"/>
+        <line num="26" count="14" type="stmt"/>
         <line num="27" count="0" type="stmt"/>
-        <line num="29" count="4" type="stmt"/>
-        <line num="30" count="4" type="stmt"/>
+        <line num="29" count="5" type="stmt"/>
+        <line num="30" count="5" type="stmt"/>
       </file>
     </package>
     <package name="platform">
       <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
       <file name="Platform.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\platform\Platform.ts">
         <metrics statements="1" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
-        <line num="10" count="7" type="stmt"/>
+        <line num="10" count="8" type="stmt"/>
       </file>
     </package>
     <package name="platform.adapters">
-      <metrics statements="208" coveredstatements="138" conditionals="79" coveredconditionals="51" methods="34" coveredmethods="29"/>
+      <metrics statements="267" coveredstatements="159" conditionals="129" coveredconditionals="63" methods="36" coveredmethods="28"/>
       <file name="ExpoCamera.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\platform\adapters\ExpoCamera.ts">
         <metrics statements="24" coveredstatements="17" conditionals="10" coveredconditionals="8" methods="2" coveredmethods="2"/>
-        <line num="4" count="8" type="stmt"/>
-        <line num="5" count="8" type="stmt"/>
-        <line num="6" count="8" type="stmt"/>
+        <line num="4" count="9" type="stmt"/>
+        <line num="5" count="9" type="stmt"/>
+        <line num="6" count="9" type="stmt"/>
         <line num="8" count="0" type="stmt"/>
         <line num="13" count="3" type="cond" truecount="1" falsecount="1"/>
         <line num="14" count="0" type="stmt"/>
@@ -874,13 +982,13 @@
       </file>
       <file name="ExpoFilePicker.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\platform\adapters\ExpoFilePicker.ts">
         <metrics statements="28" coveredstatements="18" conditionals="12" coveredconditionals="8" methods="2" coveredmethods="2"/>
-        <line num="4" count="8" type="stmt"/>
-        <line num="5" count="8" type="stmt"/>
-        <line num="6" count="8" type="stmt"/>
+        <line num="4" count="9" type="stmt"/>
+        <line num="5" count="9" type="stmt"/>
+        <line num="6" count="9" type="stmt"/>
         <line num="8" count="0" type="stmt"/>
-        <line num="11" count="8" type="stmt"/>
-        <line num="12" count="8" type="stmt"/>
-        <line num="13" count="8" type="stmt"/>
+        <line num="11" count="9" type="stmt"/>
+        <line num="12" count="9" type="stmt"/>
+        <line num="13" count="9" type="stmt"/>
         <line num="15" count="0" type="stmt"/>
         <line num="20" count="3" type="cond" truecount="1" falsecount="1"/>
         <line num="21" count="0" type="stmt"/>
@@ -904,8 +1012,8 @@
         <line num="68" count="0" type="stmt"/>
       </file>
       <file name="ExpoFileSystem.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\platform\adapters\ExpoFileSystem.ts">
-        <metrics statements="30" coveredstatements="12" conditionals="4" coveredconditionals="1" methods="8" coveredmethods="4"/>
-        <line num="7" count="6" type="stmt"/>
+        <metrics statements="34" coveredstatements="14" conditionals="4" coveredconditionals="1" methods="9" coveredmethods="5"/>
+        <line num="7" count="8" type="stmt"/>
         <line num="11" count="1" type="stmt"/>
         <line num="16" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="17" count="0" type="stmt"/>
@@ -931,50 +1039,109 @@
         <line num="64" count="0" type="stmt"/>
         <line num="66" count="0" type="stmt"/>
         <line num="67" count="0" type="stmt"/>
-        <line num="72" count="0" type="stmt"/>
+        <line num="72" count="1" type="stmt"/>
+        <line num="73" count="1" type="stmt"/>
         <line num="75" count="0" type="stmt"/>
-        <line num="77" count="0" type="stmt"/>
-        <line num="78" count="0" type="stmt"/>
+        <line num="76" count="0" type="stmt"/>
+        <line num="81" count="0" type="stmt"/>
+        <line num="84" count="0" type="stmt"/>
+        <line num="86" count="0" type="stmt"/>
+        <line num="87" count="0" type="stmt"/>
       </file>
       <file name="ExpoMicrophone.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\platform\adapters\ExpoMicrophone.ts">
-        <metrics statements="31" coveredstatements="22" conditionals="10" coveredconditionals="6" methods="5" coveredmethods="5"/>
-        <line num="7" count="8" type="stmt"/>
-        <line num="8" count="8" type="stmt"/>
-        <line num="10" count="0" type="stmt"/>
-        <line num="11" count="0" type="stmt"/>
-        <line num="13" count="0" type="stmt"/>
-        <line num="18" count="12" type="stmt"/>
-        <line num="21" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="23" count="1" type="stmt"/>
-        <line num="25" count="1" type="stmt"/>
+        <metrics statements="86" coveredstatements="41" conditionals="60" coveredconditionals="18" methods="6" coveredmethods="3"/>
+        <line num="9" count="9" type="stmt"/>
+        <line num="10" count="9" type="stmt"/>
+        <line num="12" count="0" type="stmt"/>
+        <line num="16" count="13" type="stmt"/>
+        <line num="17" count="13" type="stmt"/>
+        <line num="18" count="13" type="stmt"/>
+        <line num="19" count="13" type="stmt"/>
+        <line num="22" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="24" count="1" type="stmt"/>
         <line num="26" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="29" count="1" type="stmt"/>
-        <line num="30" count="1" type="cond" truecount="1" falsecount="1"/>
-        <line num="32" count="0" type="stmt"/>
-        <line num="33" count="0" type="stmt"/>
-        <line num="38" count="3" type="cond" truecount="1" falsecount="1"/>
-        <line num="39" count="3" type="stmt"/>
-        <line num="40" count="3" type="stmt"/>
-        <line num="45" count="3" type="stmt"/>
-        <line num="48" count="3" type="stmt"/>
-        <line num="50" count="0" type="stmt"/>
-        <line num="51" count="0" type="stmt"/>
-        <line num="56" count="2" type="cond" truecount="2" falsecount="0"/>
-        <line num="57" count="1" type="stmt"/>
-        <line num="58" count="1" type="stmt"/>
-        <line num="59" count="1" type="stmt"/>
-        <line num="60" count="1" type="stmt"/>
-        <line num="61" count="1" type="stmt"/>
-        <line num="63" count="0" type="stmt"/>
-        <line num="64" count="0" type="stmt"/>
-        <line num="69" count="1" type="stmt"/>
-        <line num="73" count="1" type="stmt"/>
+        <line num="27" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="29" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="30" count="0" type="stmt"/>
+        <line num="31" count="0" type="stmt"/>
+        <line num="35" count="1" type="stmt"/>
+        <line num="36" count="1" type="cond" truecount="3" falsecount="1"/>
+        <line num="39" count="1" type="stmt"/>
+        <line num="40" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="42" count="0" type="stmt"/>
+        <line num="43" count="0" type="stmt"/>
+        <line num="48" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="49" count="3" type="stmt"/>
+        <line num="50" count="3" type="stmt"/>
+        <line num="51" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="52" count="3" type="stmt"/>
+        <line num="60" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="61" count="3" type="stmt"/>
+        <line num="62" count="3" type="stmt"/>
+        <line num="63" count="3" type="stmt"/>
+        <line num="65" count="3" type="stmt"/>
+        <line num="71" count="3" type="stmt"/>
+        <line num="72" count="0" type="stmt"/>
+        <line num="75" count="3" type="stmt"/>
+        <line num="77" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="78" count="0" type="stmt"/>
+        <line num="79" count="0" type="stmt"/>
+        <line num="82" count="0" type="stmt"/>
+        <line num="83" count="0" type="stmt"/>
+        <line num="86" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="87" count="0" type="stmt"/>
+        <line num="88" count="0" type="stmt"/>
+        <line num="91" count="0" type="stmt"/>
+        <line num="93" count="0" type="stmt"/>
+        <line num="96" count="0" type="stmt"/>
+        <line num="97" count="0" type="stmt"/>
+        <line num="102" count="2" type="stmt"/>
+        <line num="103" count="2" type="cond" truecount="4" falsecount="0"/>
+        <line num="104" count="1" type="stmt"/>
+        <line num="106" count="1" type="stmt"/>
+        <line num="107" count="1" type="stmt"/>
+        <line num="108" count="1" type="stmt"/>
+        <line num="110" count="1" type="stmt"/>
+        <line num="111" count="1" type="stmt"/>
+        <line num="114" count="1" type="stmt"/>
+        <line num="118" count="1" type="stmt"/>
+        <line num="120" count="1" type="stmt"/>
+        <line num="121" count="1" type="stmt"/>
+        <line num="122" count="1" type="stmt"/>
+        <line num="125" count="1" type="cond" truecount="1" falsecount="1"/>
+        <line num="126" count="0" type="stmt"/>
+        <line num="129" count="0" type="cond" truecount="0" falsecount="4"/>
+        <line num="130" count="0" type="stmt"/>
+        <line num="131" count="0" type="stmt"/>
+        <line num="132" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="133" count="0" type="stmt"/>
+        <line num="137" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="138" count="0" type="stmt"/>
+        <line num="139" count="0" type="stmt"/>
+        <line num="142" count="0" type="stmt"/>
+        <line num="143" count="0" type="stmt"/>
+        <line num="145" count="0" type="stmt"/>
+        <line num="146" count="0" type="stmt"/>
+        <line num="151" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="152" count="0" type="stmt"/>
+        <line num="153" count="0" type="stmt"/>
+        <line num="155" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="156" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="157" count="0" type="stmt"/>
+        <line num="158" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="159" count="0" type="stmt"/>
+        <line num="164" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="165" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="166" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="167" count="0" type="stmt"/>
+        <line num="168" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="169" count="0" type="stmt"/>
       </file>
       <file name="ExpoNotifications.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\platform\adapters\ExpoNotifications.ts">
         <metrics statements="17" coveredstatements="10" conditionals="7" coveredconditionals="3" methods="3" coveredmethods="3"/>
-        <line num="4" count="8" type="stmt"/>
-        <line num="5" count="8" type="stmt"/>
-        <line num="6" count="8" type="stmt"/>
+        <line num="4" count="9" type="stmt"/>
+        <line num="5" count="9" type="stmt"/>
+        <line num="6" count="9" type="stmt"/>
         <line num="8" count="0" type="stmt"/>
         <line num="13" count="1" type="cond" truecount="1" falsecount="1"/>
         <line num="14" count="0" type="stmt"/>
@@ -992,17 +1159,17 @@
       </file>
       <file name="ExpoSecureStorage.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\platform\adapters\ExpoSecureStorage.ts">
         <metrics statements="15" coveredstatements="9" conditionals="6" coveredconditionals="3" methods="3" coveredmethods="3"/>
-        <line num="4" count="8" type="stmt"/>
-        <line num="5" count="8" type="stmt"/>
-        <line num="6" count="8" type="stmt"/>
+        <line num="4" count="9" type="stmt"/>
+        <line num="5" count="9" type="stmt"/>
+        <line num="6" count="9" type="stmt"/>
         <line num="8" count="0" type="stmt"/>
-        <line num="13" count="48" type="cond" truecount="1" falsecount="1"/>
+        <line num="13" count="51" type="cond" truecount="1" falsecount="1"/>
         <line num="14" count="0" type="stmt"/>
-        <line num="16" count="48" type="stmt"/>
-        <line num="20" count="8" type="cond" truecount="1" falsecount="1"/>
+        <line num="16" count="51" type="stmt"/>
+        <line num="20" count="9" type="cond" truecount="1" falsecount="1"/>
         <line num="21" count="0" type="stmt"/>
         <line num="22" count="0" type="stmt"/>
-        <line num="24" count="8" type="stmt"/>
+        <line num="24" count="9" type="stmt"/>
         <line num="28" count="1" type="cond" truecount="1" falsecount="1"/>
         <line num="29" count="0" type="stmt"/>
         <line num="30" count="0" type="stmt"/>
@@ -1010,11 +1177,11 @@
       </file>
       <file name="LlamaLocalAI.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\platform\adapters\LlamaLocalAI.ts">
         <metrics statements="51" coveredstatements="39" conditionals="24" coveredconditionals="17" methods="10" coveredmethods="9"/>
-        <line num="7" count="8" type="stmt"/>
-        <line num="8" count="8" type="stmt"/>
+        <line num="7" count="9" type="stmt"/>
+        <line num="8" count="9" type="stmt"/>
         <line num="10" count="0" type="stmt"/>
-        <line num="14" count="15" type="stmt"/>
-        <line num="15" count="15" type="stmt"/>
+        <line num="14" count="16" type="stmt"/>
+        <line num="15" count="16" type="stmt"/>
         <line num="18" count="3" type="cond" truecount="2" falsecount="0"/>
         <line num="22" count="8" type="cond" truecount="1" falsecount="1"/>
         <line num="23" count="0" type="stmt"/>
@@ -1079,7 +1246,28 @@
       </file>
     </package>
     <package name="shared.utils">
-      <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
+      <metrics statements="20" coveredstatements="20" conditionals="2" coveredconditionals="0" methods="2" coveredmethods="2"/>
+      <file name="WavHelper.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\shared\utils\WavHelper.ts">
+        <metrics statements="18" coveredstatements="18" conditionals="2" coveredconditionals="0" methods="1" coveredmethods="1"/>
+        <line num="3" count="9" type="cond" truecount="0" falsecount="2"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="5" count="1" type="stmt"/>
+        <line num="6" count="1" type="stmt"/>
+        <line num="8" count="1" type="stmt"/>
+        <line num="9" count="1" type="stmt"/>
+        <line num="10" count="1" type="stmt"/>
+        <line num="11" count="1" type="stmt"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="13" count="1" type="stmt"/>
+        <line num="14" count="1" type="stmt"/>
+        <line num="15" count="1" type="stmt"/>
+        <line num="16" count="1" type="stmt"/>
+        <line num="17" count="1" type="stmt"/>
+        <line num="18" count="1" type="stmt"/>
+        <line num="20" count="1" type="stmt"/>
+        <line num="21" count="1" type="stmt"/>
+        <line num="23" count="1" type="stmt"/>
+      </file>
       <file name="id.ts" path="C:\Users\shubham\Documents\ReactNative\Memora\src\shared\utils\id.ts">
         <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
         <line num="6" count="5" type="stmt"/>

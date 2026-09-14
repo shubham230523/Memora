@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '@/design/theme/ThemeContext';
 import { useSettingsStore } from '@/features/settings/SettingsStore';
 import { useAIModelStore } from '@/ai/AIModelManager';
+import { useWhisperModelStore } from '@/ai/WhisperModelManager';
 import { Card } from '@/design/components/Card';
 import { Icon } from '@/design/components/Icon';
 
@@ -11,9 +12,11 @@ export default function SettingsScreen() {
   const { theme, isDark } = useTheme();
   const router = useRouter();
   const { inferenceMode, setInferenceMode } = useSettingsStore();
-  const { state, deleteModel } = useAIModelStore();
+  const { state: llamaState, deleteModel: deleteLlama } = useAIModelStore();
+  const { state: whisperState, deleteModel: deleteWhisper } = useWhisperModelStore();
 
-  const isModelReady = state === 'READY' || state === 'LOADED';
+  const isLlamaReady = llamaState === 'READY' || llamaState === 'LOADED';
+  const isWhisperReady = whisperState === 'READY';
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -36,30 +39,59 @@ export default function SettingsScreen() {
           </View>
 
           {inferenceMode === 'LOCAL' && (
-            <View style={[styles.modelStatusContainer, { borderTopColor: theme.colors.border }]}>
-              <View style={styles.modelInfo}>
-                <Icon
-                  name={isModelReady ? "check-circle" : "alert-circle"}
-                  size={20}
-                  color={isModelReady ? theme.colors.success : theme.colors.warning}
-                />
-                <View style={styles.modelNameContainer}>
-                  <Text style={[styles.modelName, { color: theme.colors.text }]}>Qwen 2.5 1.5B</Text>
-                  <Text style={[styles.modelStatus, { color: theme.colors.textSecondary }]}>
-                    {isModelReady ? 'Downloaded & Ready' : 'Not Downloaded'}
-                  </Text>
+            <>
+              {/* Llama Section */}
+              <View style={[styles.modelStatusContainer, { borderTopColor: theme.colors.border }]}>
+                <View style={styles.modelInfo}>
+                  <Icon
+                    name={isLlamaReady ? "check-circle" : "alert-circle"}
+                    size={20}
+                    color={isLlamaReady ? theme.colors.success : theme.colors.warning}
+                  />
+                  <View style={styles.modelNameContainer}>
+                    <Text style={[styles.modelName, { color: theme.colors.text }]}>LLM: Qwen 2.5 1.5B</Text>
+                    <Text style={[styles.modelStatus, { color: theme.colors.textSecondary }]}>
+                      {isLlamaReady ? 'Downloaded & Ready' : 'Not Downloaded'}
+                    </Text>
+                  </View>
                 </View>
+
+                <TouchableOpacity
+                  onPress={() => isLlamaReady ? deleteLlama() : router.push('/ai-model')}
+                  style={[styles.modelActionButton, { backgroundColor: isLlamaReady ? theme.colors.error + '20' : theme.colors.primary + '20' }]}
+                >
+                  <Text style={[styles.modelActionText, { color: isLlamaReady ? theme.colors.error : theme.colors.primary }]}>
+                    {isLlamaReady ? 'Delete' : 'Setup'}
+                  </Text>
+                </TouchableOpacity>
               </View>
 
-              <TouchableOpacity
-                onPress={() => isModelReady ? deleteModel() : router.push('/ai-model')}
-                style={[styles.modelActionButton, { backgroundColor: isModelReady ? theme.colors.error + '20' : theme.colors.primary + '20' }]}
-              >
-                <Text style={[styles.modelActionText, { color: isModelReady ? theme.colors.error : theme.colors.primary }]}>
-                  {isModelReady ? 'Delete' : 'Setup'}
-                </Text>
-              </TouchableOpacity>
-            </View>
+              {/* Whisper Section */}
+              <View style={[styles.modelStatusContainer, { borderTopColor: theme.colors.border }]}>
+                <View style={styles.modelInfo}>
+                  <Icon
+                    name={isWhisperReady ? "check-circle" : "alert-circle"}
+                    size={20}
+                    color={isWhisperReady ? theme.colors.success : theme.colors.warning}
+                  />
+                  <View style={styles.modelNameContainer}>
+                    <Text style={[styles.modelName, { color: theme.colors.text }]}>STT: Local Whisper</Text>
+                    <Text style={[styles.modelStatus, { color: theme.colors.textSecondary }]}>
+                      {isWhisperReady ? 'Downloaded & Ready' : 'Not Downloaded'}
+                    </Text>
+                  </View>
+                </View>
+
+                <TouchableOpacity
+                  onPress={() => isWhisperReady ? deleteWhisper() : router.push('/stt-setup')}
+                  style={[styles.modelActionButton, { backgroundColor: isWhisperReady ? theme.colors.error + '20' : theme.colors.primary + '20' }]}
+                >
+                  <Text style={[styles.modelActionText, { color: isWhisperReady ? theme.colors.error : theme.colors.primary }]}>
+                    {isWhisperReady ? 'Delete' : 'Setup'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </>
           )}
         </Card>
       </View>

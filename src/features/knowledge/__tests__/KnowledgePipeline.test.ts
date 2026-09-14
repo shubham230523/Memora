@@ -1,6 +1,7 @@
 import { knowledgePipeline } from '../KnowledgePipeline';
 import { pdfProcessor } from '../pdf/PDFProcessor';
 import { ocrRefiner } from '../ocr/OCRRefiner';
+import { voiceProcessor } from '../voice/VoiceProcessor';
 import { noteRepository } from '../../notes/NoteRepository';
 import { chunkRepository } from '../ChunkRepository';
 import { Platform } from '../../../platform/Platform';
@@ -15,6 +16,12 @@ jest.mock('../pdf/PDFProcessor', () => ({
 jest.mock('../ocr/OCRRefiner', () => ({
   ocrRefiner: {
     refine: jest.fn(text => Promise.resolve(text)),
+  },
+}));
+
+jest.mock('../voice/VoiceProcessor', () => ({
+  voiceProcessor: {
+    transcribe: jest.fn(),
   },
 }));
 
@@ -34,6 +41,9 @@ jest.mock('../../../platform/Platform', () => ({
   Platform: {
     OCR: {
       recognizeText: jest.fn(),
+    },
+    FileSystem: {
+      readAsBase64: jest.fn(),
     },
   },
 }));
@@ -87,9 +97,10 @@ describe('KnowledgePipeline', () => {
 
   describe('ingestVoice', () => {
     it('should transcribe and save note', async () => {
+      (voiceProcessor.transcribe as jest.Mock).mockResolvedValue('Transcribed Text');
       (noteRepository.create as jest.Mock).mockResolvedValue({ id: 'note-3' });
       await knowledgePipeline.ingestVoice('voice-uri');
-      expect(noteRepository.create).toHaveBeenCalledWith('Voice Note', expect.any(String), expect.any(String));
+      expect(noteRepository.create).toHaveBeenCalledWith('Voice Note', 'Transcribed Text', expect.any(String));
     });
   });
 
