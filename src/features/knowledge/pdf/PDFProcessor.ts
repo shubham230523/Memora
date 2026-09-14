@@ -1,7 +1,6 @@
 import * as TextRecognition from '@dariyd/react-native-text-recognition';
 import * as DigitalExtract from 'expo-pdf-text-extract';
 import { logger } from '../../../core/logging/Logger';
-import { getAIProvider } from '../../../ai/AIProviderFactory';
 import { Platform } from '../../../platform/Platform';
 import { useKnowledgeStore } from '../KnowledgeStore';
 
@@ -29,6 +28,7 @@ export class PDFProcessor {
 
       let finalText = "";
       let extractionMethod = "NONE";
+      let wasUntangled = false;
 
       // 3. ENGINE A: VISION (ML KIT) - Best for complex layouts
       if (typeof TextRecognition.recognizeText === 'function') {
@@ -85,33 +85,21 @@ export class PDFProcessor {
           const digitalText = await DigitalExtract.extractText(tempPath);
 
           if (digitalText && digitalText.trim().length > 0) {
-            finalText = this.cleanDigitalText(digitalText);
-            extractionMethod = "DIGITAL";
-            logger.info(`[PDF] Digital Success: Extracted ${finalText.length} characters.`);
+            const result = this.cleanDigitalText(digitalText);
+            finalText = result.text;
+            wasUntangled = result.wasUntangled;
+            extractionMethod = wasUntangled ? "DIGITAL_STATISTICAL" : "DIGITAL";
+            logger.info(`[PDF] Digital Success: Extracted ${finalText.length} characters (Untangled: ${wasUntangled}).`);
           }
         } catch (digitalErr) {
           logger.error('[PDF] Digital Engine failed', digitalErr);
         }
       }
 
-      // 5. VALIDATION
+      // 6. VALIDATION
       if (!finalText || finalText.trim().length === 0) {
         throw new Error('All extraction engines failed. This PDF might be encrypted, empty, or use an unsupported format.');
       }
-
-      // 6. AI REFINEMENT (The "Truth" Pass)
-      logger.info('[PDF] Step 4: Running AI Refinement...');
-      setLoading(true, 'Reconstructing logical flow... 🛠️');
-
-      // console.log('--- RAW EXTRACTION START ---');
-      // console.log(finalText);
-      // console.log('--- RAW EXTRACTION END ---');
-
-      const refinedText = await this.aiRefinementPass(finalText, extractionMethod === "DIGITAL");
-
-      console.log('--- AI REFINED TEXT START ---');
-      console.log(refinedText);
-      console.log('--- AI REFINED TEXT END ---');
 
       // 7. CLEANUP
       await Platform.FileSystem.deleteFile(tempPath);
@@ -120,10 +108,9 @@ export class PDFProcessor {
       console.log('--- INDUSTRY PDF EXTRACTION SUCCESS ---');
       console.log(`Method: ${extractionMethod}`);
       console.log(`Initial Size: ${finalText.length} chars`);
-      console.log(`Final Size: ${refinedText.length} chars`);
       console.log('---------------------------------------');
 
-      return refinedText;
+      return finalText;
 
     } catch (error) {
       // Ensure cleanup even on error
@@ -169,70 +156,77 @@ export class PDFProcessor {
     return resultText;
   }
 
-  private cleanDigitalText(text: string): string {
-    // PRE-PROCESS: Add explicit column markers for the AI to see
-    // We look for at least 3 consecutive spaces which often indicates a column gutter
-    return text
+  private cleanDigitalText(text: string): { text: string; wasUntangled: boolean } {
+    const { text: untangledText, detected } = this.statisticalUntangle(text);
+
+    if (detected) {
+      // For untangled text, we preserve structure but clean minor artifacts
+      const cleaned = untangledText
+        .replace(/(\w+)-\s+(\w+)/g, '$1$2') // Fix hyphenation
+        .replace(/ {2,}/g, ' ') // Squash multiple spaces
+        .trim();
+      return { text: cleaned, wasUntangled: true };
+    }
+
+    // Standard linear cleaning fallback
+    const cleaned = text
       .replace(/ {3,}/g, ' [COLUMN_GAP] ')
       .replace(/\s+/g, ' ')
       .replace(/(\w+)-\s+(\w+)/g, '$1$2')
       .replace(/\n\s*\n/g, '\n\n')
       .trim();
+
+    return { text: cleaned, wasUntangled: false };
   }
 
-  private async aiRefinementPass(text: string, isJumbled: boolean): Promise<string> {
-    try {
-      const { useAIModelStore } = await import('../../../ai/AIModelManager');
-      const { setLoading } = useKnowledgeStore.getState();
-      const modelStore = useAIModelStore.getState();
+  private statisticalUntangle(text: string): { text: string; detected: boolean } {
+    const lines = text.split('\n');
+    if (lines.length < 10) return { text, detected: false };
 
-      if (modelStore.state === 'LOADING' || modelStore.state === 'READY') {
-        setLoading(true, 'Waiting for AI engine to wake up... 🧠\n(Finishing background setup)');
-        await modelStore.waitForModelReady();
+    const gapCounts: Record<number, number> = {};
+    lines.forEach(line => {
+      // Find the first gap of 3+ spaces
+      const match = line.match(/ {3,}/);
+      if (match && match.index !== undefined) {
+        const index = match.index;
+        gapCounts[index] = (gapCounts[index] || 0) + 1;
       }
+    });
 
-      if (useAIModelStore.getState().state !== 'LOADED') return text;
-
-      const aiProvider = getAIProvider();
-
-      // CONTEXTUAL CHUNKING: Split by major resume/document headers to preserve section context
-      const parts = text.split(/(?=TECHNICAL STACK|WORK EXPERIENCE|ACHIEVEMENTS|PROJECTS|CERTIFICATIONS|Languages:|Mobile Core:|Cross-Platform \u0026 Web:|Mobile AI \u0026 SDKs:|AI Productivity:|Agile \u0026 DevOps:)/i)
-                       .filter(p => p.trim().length > 0);
-
-      let refinedResult = "";
-      for (let i = 0; i < parts.length; i++) {
-        setLoading(true, `Reconstructing document... 🛠️\n(Section ${i + 1} of ${parts.length})`);
-        logger.info(`[PDF] AI Refinement: Processing section ${i + 1}/${parts.length}...`);
-
-        const systemPrompt = `You are a Document Reconstructor.
-A 2-column document was read horizontally, mixing words from different columns.
-
-STRICT INSTRUCTIONS:
-1. UNTANGLE the text so it reads vertically, column by column.
-2. OUTPUT ONLY THE UNTANGLED TEXT.
-3. DO NOT change any words. DO NOT summarize.
-4. If you see "[COLUMN_GAP]", it means the text to the left is Column 1 and the text to the right is Column 2.
-5. Process ONLY the provided segment. Do not repeat previous sections.`;
-
-        const response = await aiProvider.generate({
-          prompt: `<segment_to_untangle>\n${parts[i]}\n</segment_to_untangle>\n\nUntangled Text:`,
-          systemPrompt,
-          temperature: 0.0
-        });
-
-        const cleanedPart = response.text.replace(/<.*?>/g, '').trim();
-
-        // Prevent duplication: only add if this part isn't already a significant portion of refinedResult
-        if (cleanedPart.length > 10 && !refinedResult.includes(cleanedPart.substring(0, 30))) {
-          refinedResult += cleanedPart + "\n\n";
-        }
+    let bestGutter = -1;
+    let maxCount = 0;
+    for (const [index, count] of Object.entries(gapCounts)) {
+      const c = count as number;
+      if (c > maxCount) {
+        maxCount = c;
+        bestGutter = parseInt(index);
       }
-
-      return refinedResult.trim();
-    } catch (e) {
-      logger.warn('[PDF] AI Refinement pass failed or timed out.', e);
-      return text;
     }
+
+    const MIN_LINE_PERCENTAGE = 0.3;
+    if (bestGutter === -1 || maxCount / lines.length < MIN_LINE_PERCENTAGE) {
+      return { text, detected: false };
+    }
+
+    logger.info(`[PDF] Statistical Gutter Detected at char ${bestGutter} (${maxCount} lines)`);
+
+    const leftLane: string[] = [];
+    const rightLane: string[] = [];
+
+    lines.forEach(line => {
+      const left = line.substring(0, bestGutter).trim();
+      const right = line.substring(bestGutter).trim();
+      if (left) leftLane.push(left);
+      if (right) rightLane.push(right);
+    });
+
+    const untangled = [
+      ...leftLane,
+      "\n--- COLUMN BREAK ---\n",
+      ...rightLane
+    ].join('\n');
+
+    return { text: untangled, detected: true };
   }
 
   async extractMetadata(uri: string): Promise<PDFMetadata> {

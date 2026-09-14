@@ -12,7 +12,7 @@ export class KnowledgePipeline {
   async ingestPDF(uri: string, name: string): Promise<void> {
     const { setLoading } = useKnowledgeStore.getState();
     try {
-      setLoading(true, 'Initializing AI engine... (5s)');
+      setLoading(true, 'Extracting text... 📄');
       const text = await pdfProcessor.process(uri);
 
       if (!text || text.trim().length === 0) {
