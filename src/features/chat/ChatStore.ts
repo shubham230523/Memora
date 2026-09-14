@@ -208,8 +208,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
       // Filtering segments for scanning
       const allSegments: { source: string; content: string; densityScore: number }[] = [];
       for (const source of topContext) {
-        const size = 2000;
-        const overlap = 500;
+        const size = 1200; // Smaller size for 1.5B model focus
+        const overlap = 300;
         let start = 0;
         while (start < source.content.length) {
           const text = source.content.substring(start, start + size + overlap);
@@ -217,6 +217,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
           expandedKeywords.forEach(kw => {
             if (text.toLowerCase().includes(kw)) score += 2;
           });
+          // Boost score if segment contains year-like numbers (2023, 2024, 2026)
+          if (/\b202\d\b/.test(text)) score += 3;
+
           allSegments.push({
             source: source.source,
             content: text,
@@ -242,24 +245,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
         logger.info(`[CHAT] AI Scanning Segment ${i + 1}/${winnerSegments.length} (from ${segment.source})`);
 
-        const scanSystemPrompt = `You are Memora, a helpful and natural knowledge assistant.
-Your ONLY goal is to answer the user's question using the provided DATA.
+        const currentDate = new Date().toISOString().split('T')[0];
+        const scanSystemPrompt = `You are a helpful assistant. Answer the user's question using ONLY the text provided below.
+Current Date: ${currentDate}
+If the answer is not in the text, respond with: NOT_FOUND.
+Be direct and use dates to find the "last" or "most recent" info.`;
 
-RULES:
-1. Provide a direct, natural sentence as the answer.
-2. If the answer is truly missing from the DATA, respond with EXACTLY: "NOT_FOUND".
-3. If the user asks for a favorite, the top item in a list (#1) is the winner.
-4. Do not invent dates or facts. Use only what is written.`;
-
-        const scanUserPrompt = `DATA SOURCE: ${segment.source}
-CONTENT:
-"""
+        const scanUserPrompt = `TEXT FROM "${segment.source}":
+---
 ${segment.content}
-"""
+---
 
 QUESTION: ${content}
-
-Extraction:`;
+ANSWER:`;
 
         const response = await aiProvider.generate({
           prompt: scanUserPrompt,

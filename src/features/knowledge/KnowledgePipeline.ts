@@ -23,8 +23,8 @@ export class KnowledgePipeline {
 
       setLoading(true, 'Finishing up... ✨');
       // Document chunking (MVP requirement 9)
-      // High-precision chunking (200 chars) for 1.5B models to prevent cognitive overload
-      const chunks = this.chunkText(text, 200);
+      // Standard chunking (1000 chars) for better context retention
+      const chunks = this.chunkText(text, 1000);
       await chunkRepository.saveChunks(chunks.map((content, index) => ({
         knowledgeItemId: note.id,
         content,
@@ -42,8 +42,11 @@ export class KnowledgePipeline {
 
   private chunkText(text: string, size: number): string[] {
     const chunks: string[] = [];
-    for (let i = 0; i < text.length; i += size) {
-      chunks.push(text.substring(i, i + size));
+    const overlap = 200; // Added overlap to prevent splitting names/dates
+    let start = 0;
+    while (start < text.length) {
+      chunks.push(text.substring(start, start + size + overlap));
+      start += size;
     }
     return chunks;
   }
@@ -67,7 +70,7 @@ export class KnowledgePipeline {
       const note = await noteRepository.create('Scanned Image', text, KnowledgeType.IMAGE);
 
       setLoading(true, 'Indexing knowledge... ✨');
-      const chunks = this.chunkText(text, 200);
+      const chunks = this.chunkText(text, 1000);
       await chunkRepository.saveChunks(chunks.map((content, index) => ({
         knowledgeItemId: note.id,
         content,
