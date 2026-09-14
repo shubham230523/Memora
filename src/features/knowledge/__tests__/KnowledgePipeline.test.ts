@@ -1,5 +1,6 @@
 import { knowledgePipeline } from '../KnowledgePipeline';
 import { pdfProcessor } from '../pdf/PDFProcessor';
+import { ocrRefiner } from '../ocr/OCRRefiner';
 import { noteRepository } from '../../notes/NoteRepository';
 import { chunkRepository } from '../ChunkRepository';
 import { Platform } from '../../../platform/Platform';
@@ -8,6 +9,12 @@ import { useKnowledgeStore } from '../KnowledgeStore';
 jest.mock('../pdf/PDFProcessor', () => ({
   pdfProcessor: {
     process: jest.fn(),
+  },
+}));
+
+jest.mock('../ocr/OCRRefiner', () => ({
+  ocrRefiner: {
+    refine: jest.fn(text => Promise.resolve(text)),
   },
 }));
 
@@ -58,14 +65,16 @@ describe('KnowledgePipeline', () => {
   });
 
   describe('ingestImage', () => {
-    it('should perform OCR and save note/chunks', async () => {
-      (Platform.OCR.recognizeText as jest.Mock).mockResolvedValue('OCR Text');
+    it('should perform OCR, refine text and save note/chunks', async () => {
+      (Platform.OCR.recognizeText as jest.Mock).mockResolvedValue('OCR Text with Noise');
+      (ocrRefiner.refine as jest.Mock).mockResolvedValue('Cleaned OCR Text');
       (noteRepository.create as jest.Mock).mockResolvedValue({ id: 'note-2' });
 
       await knowledgePipeline.ingestImage('image-uri');
 
       expect(Platform.OCR.recognizeText).toHaveBeenCalledWith('image-uri');
-      expect(noteRepository.create).toHaveBeenCalledWith('Scanned Image', 'OCR Text', expect.any(String));
+      expect(ocrRefiner.refine).toHaveBeenCalledWith('OCR Text with Noise');
+      expect(noteRepository.create).toHaveBeenCalledWith('Scanned Image', 'Cleaned OCR Text', expect.any(String));
       expect(chunkRepository.saveChunks).toHaveBeenCalled();
     });
 

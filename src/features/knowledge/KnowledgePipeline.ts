@@ -1,4 +1,5 @@
 import { pdfProcessor } from './pdf/PDFProcessor';
+import { ocrRefiner } from './ocr/OCRRefiner';
 import { voiceProcessor } from './voice/VoiceProcessor';
 import { webProcessor } from './web/WebProcessor';
 import { noteRepository } from '../notes/NoteRepository';
@@ -67,10 +68,21 @@ export class KnowledgePipeline {
       console.log('--- EXTRACTED TEXT END ---');
       console.log('---------------------------------------');
 
-      const note = await noteRepository.create('Scanned Image', text, KnowledgeType.IMAGE);
+      setLoading(true, 'Cleaning up noise... ✨');
+      const refinedText = await ocrRefiner.refine(text);
+
+      if (refinedText !== text) {
+        console.log('--- AI REFINEMENT SUCCESS ---');
+        console.log('--- CLEANED TEXT START ---');
+        console.log(refinedText);
+        console.log('--- CLEANED TEXT END ---');
+        console.log('---------------------------------------');
+      }
+
+      const note = await noteRepository.create('Scanned Image', refinedText, KnowledgeType.IMAGE);
 
       setLoading(true, 'Indexing knowledge... ✨');
-      const chunks = this.chunkText(text, 1000);
+      const chunks = this.chunkText(refinedText, 1000);
       await chunkRepository.saveChunks(chunks.map((content, index) => ({
         knowledgeItemId: note.id,
         content,
