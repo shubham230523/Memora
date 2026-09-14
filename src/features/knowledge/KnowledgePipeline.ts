@@ -99,11 +99,23 @@ export class KnowledgePipeline {
   }
 
   async ingestVoice(uri: string): Promise<void> {
+    const { setLoading } = useKnowledgeStore.getState();
     try {
+      setLoading(true, 'Transcribing audio... 🎙️');
       const text = await voiceProcessor.transcribe(uri);
+
+      console.log('--- VOICE TRANSCRIPTION SUCCESS ---');
+      console.log('--- EXTRACTED TEXT START ---');
+      console.log(text);
+      console.log('--- EXTRACTED TEXT END ---');
+      console.log('---------------------------------------');
+
       await noteRepository.create('Voice Note', text, KnowledgeType.VOICE);
+
+      setLoading(false);
       logger.info('Successfully ingested Voice Note');
     } catch (error) {
+      setLoading(false);
       logger.error('Failed to ingest voice', error);
       throw error;
     }

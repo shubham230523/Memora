@@ -42,15 +42,20 @@ jest.mock('expo-image-picker', () => ({
 }));
 
 jest.mock('expo-audio', () => ({
-  Audio: {
-    Recording: {
-      createAsync: jest.fn(),
-    },
-    setAudioModeAsync: jest.fn(),
-    requestPermissionsAsync: jest.fn(),
-    getPermissionsAsync: jest.fn(),
-    RecordingOptionsPresets: { HIGH_QUALITY: {} },
+  setIsAudioActiveAsync: jest.fn(),
+  setAudioModeAsync: jest.fn(),
+  requestRecordingPermissionsAsync: jest.fn(async () => ({ status: 'granted', granted: true })),
+  getRecordingPermissionsAsync: jest.fn(async () => ({ status: 'granted', granted: true })),
+  AudioModule: {
+    AudioRecorder: jest.fn().mockImplementation(() => ({
+      prepareToRecordAsync: jest.fn(),
+      record: jest.fn(),
+      stop: jest.fn(),
+      release: jest.fn(),
+      uri: 'file:///mock/audio.m4a',
+    })),
   },
+  RecordingPresets: { HIGH_QUALITY: {} },
 }));
 
 jest.mock('expo-secure-store', () => ({
