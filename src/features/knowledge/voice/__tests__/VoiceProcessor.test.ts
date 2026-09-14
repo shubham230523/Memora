@@ -13,6 +13,7 @@ jest.mock('../../../../platform/Platform', () => ({
     },
     FileSystem: {
       readAsBase64: jest.fn(),
+      exists: jest.fn().mockResolvedValue(true),
     },
     SecureStorage: {
       getItem: jest.fn(),
@@ -69,5 +70,29 @@ describe('VoiceProcessor', () => {
     const result = await voiceProcessor.transcribe('file:///test.m4a');
 
     expect(result).toBe('No speech detected in this recording.');
+  });
+
+  it('startRecording should request permissions and start recording', async () => {
+    (Platform.Microphone.requestPermissions as jest.Mock).mockResolvedValue(true);
+
+    await voiceProcessor.startRecording();
+
+    expect(Platform.Microphone.requestPermissions).toHaveBeenCalled();
+    expect(Platform.Microphone.startRecording).toHaveBeenCalled();
+  });
+
+  it('startRecording should throw if permission denied', async () => {
+    (Platform.Microphone.requestPermissions as jest.Mock).mockResolvedValue(false);
+
+    await expect(voiceProcessor.startRecording()).rejects.toThrow('Microphone permission denied');
+  });
+
+  it('stopRecording should return uri from platform', async () => {
+    (Platform.Microphone.stopRecording as jest.Mock).mockResolvedValue('file:///recorded.wav');
+
+    const uri = await voiceProcessor.stopRecording();
+
+    expect(uri).toBe('file:///recorded.wav');
+    expect(Platform.Microphone.stopRecording).toHaveBeenCalled();
   });
 });

@@ -131,7 +131,9 @@ jest.mock('expo-background-fetch', () => ({
 
 jest.mock('whisper.rn', () => ({
   initWhisper: jest.fn().mockResolvedValue({
-    transcribe: jest.fn().mockResolvedValue({ text: 'Mock transcription' }),
+    transcribe: jest.fn().mockReturnValue({
+      promise: Promise.resolve({ result: 'Mock transcription' })
+    }),
     release: jest.fn(),
   }),
 }), { virtual: true });

@@ -12,6 +12,7 @@ import { Platform } from '@/platform/Platform';
 import { knowledgePipeline } from '@/features/knowledge/KnowledgePipeline';
 import { Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 // Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -20,7 +21,7 @@ export default function RootLayout() {
   const [isDbReady, setIsDbReady] = useState(false);
   const { checkStatus } = useAIModelStore();
   const [loaded, error] = useFonts({
-    // Add custom fonts if needed
+    ...MaterialCommunityIcons.font,
   });
 
   useEffect(() => {

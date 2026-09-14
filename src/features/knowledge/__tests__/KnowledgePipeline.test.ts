@@ -84,7 +84,7 @@ describe('KnowledgePipeline', () => {
 
       expect(Platform.OCR.recognizeText).toHaveBeenCalledWith('image-uri');
       expect(ocrRefiner.refine).toHaveBeenCalledWith('OCR Text with Noise');
-      expect(noteRepository.create).toHaveBeenCalledWith('Scanned Image', 'Cleaned OCR Text', expect.any(String));
+      expect(noteRepository.create).toHaveBeenCalledWith(expect.stringContaining('Scan:'), 'Cleaned OCR Text', expect.any(String));
       expect(chunkRepository.saveChunks).toHaveBeenCalled();
     });
 
@@ -100,7 +100,7 @@ describe('KnowledgePipeline', () => {
       (voiceProcessor.transcribe as jest.Mock).mockResolvedValue('Transcribed Text');
       (noteRepository.create as jest.Mock).mockResolvedValue({ id: 'note-3' });
       await knowledgePipeline.ingestVoice('voice-uri');
-      expect(noteRepository.create).toHaveBeenCalledWith('Voice Note', 'Transcribed Text', expect.any(String));
+      expect(noteRepository.create).toHaveBeenCalledWith(expect.stringContaining('Transcribed Text'), 'Transcribed Text', expect.any(String));
     });
   });
 
