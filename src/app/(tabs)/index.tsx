@@ -12,6 +12,7 @@ import { EmptyState } from '@/design/components/EmptyState';
 import { Platform } from '@/platform/Platform';
 import { knowledgePipeline } from '@/features/knowledge/KnowledgePipeline';
 import { useKnowledgeStore } from '@/features/knowledge/KnowledgeStore';
+import { useAIModelStore } from '@/ai/AIModelManager';
 import { logger } from '@/core/logging/Logger';
 import { Loading } from '@/design/components/Loading';
 
@@ -62,6 +63,17 @@ export default function HomeScreen() {
           );
           return;
         }
+
+        // MEMORY PROTECTION: Unload AI model before opening heavy camera app
+        // The 1.5B model takes ~1GB RAM. Camera apps are memory intensive.
+        // Android will kill Memora if we don't free memory first.
+        const { state, unloadModel, loadModel } = useAIModelStore.getState();
+        const wasLoaded = state === 'LOADED' || state === 'LOADING';
+        if (wasLoaded) {
+          logger.info('[OCR] Unloading AI model to free memory for camera...');
+          await unloadModel();
+        }
+
         const res = await Platform.Camera.takePhoto();
         if (res) {
           setLoading(true, 'Processing image...');
@@ -69,6 +81,12 @@ export default function HomeScreen() {
           await fetchHomeData();
           setLoading(false);
           Alert.alert('Success', 'Image processed via OCR');
+
+          // Restore model if it was previously loaded
+          if (wasLoaded) {
+            logger.info('[OCR] Re-loading AI model...');
+            loadModel().catch(e => logger.warn('Failed to re-load model after scan', e));
+          }
         }
       } else if (type === 'VOICE') {
         router.push('/notes/voice-record');
