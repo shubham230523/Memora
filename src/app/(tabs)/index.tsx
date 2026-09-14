@@ -14,6 +14,7 @@ import { knowledgePipeline } from '@/features/knowledge/KnowledgePipeline';
 import { useKnowledgeStore } from '@/features/knowledge/KnowledgeStore';
 import { logger } from '@/core/logging/Logger';
 import { Loading } from '@/design/components/Loading';
+import { MemoraLogo } from '@/design/components/MemoraLogo';
 
 export default function HomeScreen() {
   const { theme, isDark } = useTheme();
@@ -93,8 +94,11 @@ export default function HomeScreen() {
       }
     >
       <StatusBar style={isDark ? 'light' : 'dark'} />
-      <View style={[styles.header, { paddingTop: insets.top + 24 }]}>
-        <Text style={[styles.greeting, { color: theme.colors.textSecondary }]}>Hello,</Text>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+        <View style={styles.brandRow}>
+          <MemoraLogo size={32} showText={false} />
+          <Text style={[styles.greeting, { color: theme.colors.textSecondary, marginLeft: 8 }]}>Hello,</Text>
+        </View>
         <Text style={[styles.title, { color: theme.colors.text }]}>Your Knowledge</Text>
       </View>
 
@@ -108,12 +112,6 @@ export default function HomeScreen() {
           label="This Week"
           value={stats.itemsThisWeek.toString()}
           icon="calendar-week"
-        />
-        <StatCard
-          label="Gaps"
-          value={stats.knowledgeGaps.toString()}
-          icon="alert-circle-outline"
-          color={theme.colors.warning}
         />
       </View>
 
@@ -155,10 +153,22 @@ export default function HomeScreen() {
           recentItems.map(item => (
             <Card key={item.id} style={styles.itemCard}>
               <View style={styles.recentItemRow}>
-                <Icon name={getIconForType(item.type)} size={20} color={theme.colors.primary} />
-                <Text style={[styles.itemTitle, { color: theme.colors.text }]} numberOfLines={1}>
-                  {item.title}
-                </Text>
+                <View style={[styles.iconContainer, { backgroundColor: theme.colors.secondary }]}>
+                  <Icon name={getIconForType(item.type)} size={20} color={theme.colors.primary} />
+                </View>
+                <View style={styles.itemInfo}>
+                  <View style={styles.itemHeader}>
+                    <Text style={[styles.itemTitle, { color: theme.colors.text }]} numberOfLines={1}>
+                      {item.title}
+                    </Text>
+                    <Text style={[styles.itemDate, { color: theme.colors.textSecondary }]}>
+                      {new Date(item.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                    </Text>
+                  </View>
+                  <Text style={[styles.itemSnippet, { color: theme.colors.textSecondary }]} numberOfLines={1}>
+                    {item.content}
+                  </Text>
+                </View>
               </View>
             </Card>
           ))
@@ -204,7 +214,8 @@ const CaptureButton = ({ icon, label, onPress }: any) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { padding: 24 },
+  header: { paddingHorizontal: 24, paddingBottom: 16 },
+  brandRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
   greeting: { fontSize: 16, fontWeight: '500' },
   title: { fontSize: 28, fontWeight: 'bold', marginTop: 4 },
   statsContainer: {
@@ -230,7 +241,38 @@ const styles = StyleSheet.create({
   },
   captureLabel: { fontSize: 12, fontWeight: '500' },
   itemCard: { marginBottom: 12 },
-  recentItemRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 4 },
-  itemTitle: { fontSize: 16, flex: 1 },
+  recentItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  iconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  itemInfo: {
+    flex: 1,
+  },
+  itemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 2
+  },
+  itemTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    flex: 1,
+  },
+  itemSnippet: {
+    fontSize: 13,
+    lineHeight: 18
+  },
+  itemDate: {
+    fontSize: 11,
+    marginLeft: 8
+  },
   empty: { paddingVertical: 40 },
 });

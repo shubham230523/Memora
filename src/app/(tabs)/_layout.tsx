@@ -14,6 +14,10 @@ export default function TabLayout() {
           backgroundColor: theme.colors.surface,
           borderTopColor: theme.colors.border,
         },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '600',
+        },
         headerStyle: {
           backgroundColor: theme.colors.surface,
         },
@@ -35,13 +39,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="search"
-        options={{
-          title: 'Search',
-          tabBarIcon: ({ color }) => <Icon name="magnify" color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="chat"
         options={{
           title: 'AI Chat',
@@ -49,10 +46,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="learning"
+        name="search"
         options={{
-          title: 'Learning',
-          tabBarIcon: ({ color }) => <Icon name="school" color={color} />,
+          title: 'Search',
+          tabBarIcon: ({ color }) => <Icon name="magnify" color={color} />,
         }}
       />
       <Tabs.Screen

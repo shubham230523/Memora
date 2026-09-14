@@ -5,7 +5,6 @@ interface HomeState {
   stats: {
     totalItems: number;
     itemsThisWeek: number;
-    knowledgeGaps: number;
   };
   recentItems: any[];
   isLoading: boolean;
@@ -16,7 +15,6 @@ export const useHomeStore = create<HomeState>((set) => ({
   stats: {
     totalItems: 0,
     itemsThisWeek: 0,
-    knowledgeGaps: 0,
   },
   recentItems: [],
   isLoading: false,

@@ -75,7 +75,9 @@ export class KnowledgePipeline {
       logger.info(`[KnowledgePipeline] AI Refinement complete, length: ${refinedText.length} chars`);
 
       setLoading(true, 'Creating note... 📝');
-      const note = await noteRepository.create('Scanned Image', refinedText, KnowledgeType.IMAGE);
+      const words = refinedText.split(/\s+/).slice(0, 5).join(' ');
+      const title = words.length > 0 ? `Scan: ${words}...` : 'Scanned Image';
+      const note = await noteRepository.create(title, refinedText, KnowledgeType.IMAGE);
 
       setLoading(true, 'Indexing knowledge... ✨');
       const chunks = this.chunkText(refinedText, 1000);
@@ -110,7 +112,10 @@ export class KnowledgePipeline {
       console.log('-----------------------------------');
 
       setLoading(true, 'Creating note... 📝');
-      const note = await noteRepository.create('Voice Note', text, KnowledgeType.VOICE);
+      // Create a descriptive title from the first few words of transcription
+      const words = text.split(/\s+/).slice(0, 5).join(' ');
+      const title = words.length > 0 ? `${words}...` : 'Voice Note';
+      const note = await noteRepository.create(title, text, KnowledgeType.VOICE);
       logger.info(`[KnowledgePipeline] Note created with ID: ${note.id}`);
 
       setLoading(true, 'Indexing voice knowledge... ✨');

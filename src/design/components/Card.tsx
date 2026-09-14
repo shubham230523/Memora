@@ -4,21 +4,22 @@ import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { borderRadius, shadows } from '../theme/tokens';
 
+import { useTheme } from '../theme/ThemeContext';
+
 interface CardProps {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
 }
 
 export const Card: React.FC<CardProps> = ({ children, style }) => {
-  const isDark = false; // TODO: Hook into theme
-  const themeColors = isDark ? colors.dark : colors.light;
+  const { theme } = useTheme();
 
   return (
     <View style={[
       styles.card,
       {
-        backgroundColor: themeColors.surface,
-        borderColor: themeColors.border,
+        backgroundColor: theme.colors.surface,
+        borderColor: theme.colors.border,
       },
       style
     ]}>
