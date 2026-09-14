@@ -23,7 +23,7 @@ export class KnowledgePipeline {
 
       setLoading(true, 'Finishing up... ✨');
       // Document chunking (MVP requirement 9)
-      // High-precision chunking (200 chars) for 0.5B models to prevent cognitive overload
+      // High-precision chunking (200 chars) for 1.5B models to prevent cognitive overload
       const chunks = this.chunkText(text, 200);
       await chunkRepository.saveChunks(chunks.map((content, index) => ({
         knowledgeItemId: note.id,
