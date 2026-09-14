@@ -32,7 +32,8 @@ describe('ExpoMicrophone', () => {
   });
 
   it('requestPermissions should return true if granted', async () => {
-    (Audio.requestPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted' });
+    (Audio.getPermissionsAsync as jest.Mock).mockResolvedValue({ granted: false });
+    (Audio.requestPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted', granted: true });
     const granted = await microphone.requestPermissions();
     expect(granted).toBe(true);
   });

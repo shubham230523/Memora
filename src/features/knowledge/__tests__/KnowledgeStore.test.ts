@@ -56,4 +56,16 @@ describe('KnowledgeStore', () => {
     expect(useKnowledgeStore.getState().items.length).toBe(1);
     expect(useKnowledgeStore.getState().items[0].id).toBe('2');
   });
+
+  it('setLoading should update loading state', () => {
+    useKnowledgeStore.getState().setLoading(true, 'Test Label');
+    expect(useKnowledgeStore.getState().isLoading).toBe(true);
+    expect(useKnowledgeStore.getState().loadingLabel).toBe('Test Label');
+  });
+
+  it('fetchItems should handle errors', async () => {
+    (knowledgeRepository.getAll as jest.Mock).mockRejectedValue(new Error('fail'));
+    await useKnowledgeStore.getState().fetchItems();
+    expect(useKnowledgeStore.getState().isLoading).toBe(false);
+  });
 });

@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">74.07% </span>
+                <span class="strong">65.71% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>20/27</span>
+                <span class='fraction'>23/35</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">66.66% </span>
+                <span class="strong">60% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>4/6</span>
+                <span class='fraction'>6/10</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">79.16% </span>
+                <span class="strong">70.96% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>19/24</span>
+                <span class='fraction'>22/31</span>
             </div>
         
             
@@ -122,24 +122,56 @@
 <a name='L57'></a><a href='#L57'>57</a>
 <a name='L58'></a><a href='#L58'>58</a>
 <a name='L59'></a><a href='#L59'>59</a>
-<a name='L60'></a><a href='#L60'>60</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -184,12 +216,17 @@
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { IMicrophoneProvider } from '../interfaces/Microphone';
 import { logger } from '../../core/logging/Logger';
 &nbsp;
-// Safely require expo-av to prevent crash if native module is missing
+// Safely require audio module to prevent crash if native module is missing
+// SDK 57 uses expo-audio, older SDKs use expo-av
 let Audio: any;
 try {
-  Audio = require('expo-av').Audio;
+  Audio = require('expo-audio').Audio;
 } catch (e) {
-<span class="cstat-no" title="statement not covered" >  logger.warn('expo-av not found or native module missing');</span>
+<span class="cstat-no" title="statement not covered" >  try {</span>
+<span class="cstat-no" title="statement not covered" >    Audio = require('expo-av').Audio;</span>
+  } catch (e2) {
+<span class="cstat-no" title="statement not covered" >    logger.warn('Audio module (expo-audio or expo-av) not found or native module missing');</span>
+  }
 }
 &nbsp;
 export class ExpoMicrophone implements IMicrophoneProvider {
@@ -197,8 +234,19 @@ export class ExpoMicrophone implements IMicrophoneProvider {
 &nbsp;
   async requestPermissions(): Promise&lt;boolean&gt; {
     <span class="missing-if-branch" title="if path not taken" >I</span>if (!Audio) <span class="cstat-no" title="statement not covered" >return false;</span>
-    const { status } = await Audio.requestPermissionsAsync();
-    return status === 'granted';
+&nbsp;
+    try {
+      // Check current status first
+      const current = await Audio.getPermissionsAsync();
+      <span class="missing-if-branch" title="if path not taken" >I</span>if (current.granted) <span class="cstat-no" title="statement not covered" >return true;</span>
+&nbsp;
+      // If not granted, request it
+      const { status, granted } = await Audio.requestPermissionsAsync();
+      return granted || <span class="branch-1 cbranch-no" title="branch not covered" >status === 'granted';</span>
+    } catch (error) {
+<span class="cstat-no" title="statement not covered" >      logger.error('Failed to request microphone permissions', error);</span>
+<span class="cstat-no" title="statement not covered" >      return false;</span>
+    }
   }
 &nbsp;
   async startRecording(): Promise&lt;void&gt; {
@@ -247,7 +295,7 @@ export class ExpoMicrophone implements IMicrophoneProvider {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-09-11T16:26:14.867Z
+                at 2026-09-14T04:24:01.878Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

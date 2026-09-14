@@ -14,7 +14,7 @@ describe('Root Navigation', () => {
     jest.clearAllMocks();
     // Default stores to a clean state
     useAIModelStore.setState({ state: 'NOT_INSTALLED' });
-    useSettingsStore.setState({ inferenceMode: 'LOCAL' });
+    useSettingsStore.setState({ inferenceMode: 'LOCAL', _hasHydrated: true });
   });
 
   it('redirects to ai-model when local model not installed', async () => {
@@ -46,5 +46,12 @@ describe('Root Navigation', () => {
 
     // Restore
     useAIModelStore.getState().checkStatus = originalCheckStatus;
+  });
+
+  it('renders loading view when settings not hydrated', async () => {
+    useSettingsStore.setState({ _hasHydrated: false });
+
+    const rendered = await render(<Index />);
+    expect(rendered.toJSON()).toMatchSnapshot();
   });
 });

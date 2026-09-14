@@ -11,6 +11,7 @@ jest.mock('expo-sqlite', () => ({
     runAsync: jest.fn(async () => ({ lastInsertRowId: 1, changes: 1 })),
     getFirstAsync: jest.fn(async () => null),
     getAllAsync: jest.fn(async () => []),
+    withTransactionAsync: jest.fn(async (cb) => await cb()),
   })),
 }));
 
@@ -35,7 +36,8 @@ jest.mock('expo-document-picker', () => ({
 jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn(),
   launchCameraAsync: jest.fn(),
-  requestCameraPermissionsAsync: jest.fn(),
+  requestCameraPermissionsAsync: jest.fn(async () => ({ status: 'granted', granted: true })),
+  getCameraPermissionsAsync: jest.fn(async () => ({ status: 'granted', granted: true })),
   MediaTypeOptions: { Images: 'images' },
 }));
 
@@ -72,6 +74,50 @@ jest.mock('expo-task-manager', () => ({
   defineTask: jest.fn(),
   isTaskRegisteredAsync: jest.fn(),
 }));
+
+jest.mock('expo-modules-core', () => {
+  const { EventEmitter } = require('events');
+  return {
+    EventEmitter,
+    NativeModule: {},
+    ProxyNativeModule: {},
+    requireNativeModule: jest.fn(),
+  };
+});
+
+jest.mock('expo-file-system', () => ({
+  documentDirectory: 'file:///mock/',
+  cacheDirectory: 'file:///cache/',
+  copyAsync: jest.fn(),
+  deleteAsync: jest.fn(),
+  getInfoAsync: jest.fn(),
+  makeDirectoryAsync: jest.fn(),
+  readAsStringAsync: jest.fn(),
+  writeAsStringAsync: jest.fn(),
+  downloadAsync: jest.fn(),
+  createDownloadResumable: jest.fn(() => ({
+    downloadAsync: jest.fn().mockResolvedValue({ uri: 'file:///mock/file' }),
+  })),
+  getContentUriAsync: jest.fn(async (uri) => uri),
+  EncodingType: { UTF8: 'utf8' },
+}));
+
+jest.mock('expo-file-system/legacy', () => ({
+  documentDirectory: 'file:///mock/',
+  cacheDirectory: 'file:///cache/',
+  copyAsync: jest.fn(),
+  deleteAsync: jest.fn(),
+  getInfoAsync: jest.fn(),
+  makeDirectoryAsync: jest.fn(),
+  readAsStringAsync: jest.fn(),
+  writeAsStringAsync: jest.fn(),
+  downloadAsync: jest.fn(),
+  createDownloadResumable: jest.fn(() => ({
+    downloadAsync: jest.fn().mockResolvedValue({ uri: 'file:///mock/file' }),
+  })),
+  getContentUriAsync: jest.fn(async (uri) => uri),
+  EncodingType: { UTF8: 'utf8' },
+}), { virtual: true });
 
 jest.mock('expo-background-fetch', () => ({
   registerTaskAsync: jest.fn(),

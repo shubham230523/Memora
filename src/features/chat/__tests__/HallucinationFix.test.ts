@@ -60,12 +60,12 @@ describe('ChatStore Hallucination Fix', () => {
     const systemPrompt = callArgs.systemPrompt;
 
     // Check for scanning protocol in prompt
-    expect(systemPrompt).toContain('You are Memora, a helpful and natural knowledge assistant');
-    expect(callArgs.prompt).toContain('DATA SOURCE');
+    expect(systemPrompt).toContain('You are a helpful assistant');
+    expect(callArgs.prompt).toContain('TEXT FROM');
     expect(callArgs.prompt).toContain('QUESTION:');
 
     // Check that context is structured correctly
-    expect(callArgs.prompt).toContain('DATA SOURCE: Favourite AI Provider');
+    expect(callArgs.prompt).toContain('TEXT FROM "Favourite AI Provider"');
 
     // 4. Verify result in state
     const messages = useChatStore.getState().messages;

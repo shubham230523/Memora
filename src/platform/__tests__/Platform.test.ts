@@ -6,7 +6,8 @@ jest.mock('expo-document-picker', () => ({
 
 jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn(async () => ({ canceled: true })),
-  requestCameraPermissionsAsync: jest.fn(async () => ({ status: 'granted' })),
+  requestCameraPermissionsAsync: jest.fn(async () => ({ status: 'granted', granted: true })),
+  getCameraPermissionsAsync: jest.fn(async () => ({ status: 'granted', granted: true })),
 }));
 
 jest.mock('expo-audio', () => ({

@@ -45,7 +45,7 @@ describe('KnowledgeRepository', () => {
       });
 
       expect(mockDb.getAllAsync).toHaveBeenCalledWith(
-        expect.stringContaining('AND type = ? AND isFavorite = ? AND (title LIKE ? OR content LIKE ?)'),
+        expect.stringContaining('AND type = ? AND isFavorite = ? AND ((title LIKE ? OR content LIKE ?))'),
         ['WEB_ARTICLE', 1, '%react%', '%react%']
       );
     });
@@ -68,6 +68,59 @@ describe('KnowledgeRepository', () => {
         'DELETE FROM knowledge_items WHERE id = ?',
         ['123']
       );
+    });
+  });
+
+  describe('getStats', () => {
+    it('should calculate stats correctly', async () => {
+      mockDb.getFirstAsync = jest.fn()
+        .mockResolvedValueOnce({ count: 10 }) // total
+        .mockResolvedValueOnce({ count: 2 })  // this week
+        .mockResolvedValueOnce({ count: 1 }); // gaps
+
+      const stats = await knowledgeRepository.getStats();
+
+      expect(stats).toEqual({
+        totalItems: 10,
+        itemsThisWeek: 2,
+        knowledgeGaps: 1
+      });
+    });
+  });
+
+  describe('searchChunks', () => {
+    it('should return chunks matching keywords', async () => {
+      mockDb.getAllAsync.mockResolvedValue([{ content: 'match' }]);
+      const result = await knowledgeRepository.searchChunks(['key']);
+      expect(mockDb.getAllAsync).toHaveBeenCalledWith(
+        expect.stringContaining('c.content LIKE ?'),
+        ['%key%']
+      );
+      expect(result).toHaveLength(1);
+    });
+  });
+
+  describe('getRecent', () => {
+    it('should fetch recent items', async () => {
+      mockDb.getAllAsync.mockResolvedValue([{ id: 'recent-1' }]);
+      const result = await knowledgeRepository.getRecent(5);
+      expect(mockDb.getAllAsync).toHaveBeenCalledWith(
+        expect.stringContaining('ORDER BY createdAt DESC LIMIT ?'),
+        [5]
+      );
+      expect(result).toHaveLength(1);
+    });
+  });
+
+  describe('getRecentChunks', () => {
+    it('should fetch recent chunks', async () => {
+      mockDb.getAllAsync.mockResolvedValue([{ id: 'chunk-recent-1' }]);
+      const result = await knowledgeRepository.getRecentChunks(3);
+      expect(mockDb.getAllAsync).toHaveBeenCalledWith(
+        expect.stringContaining('LIMIT ?'),
+        [3]
+      );
+      expect(result).toHaveLength(1);
     });
   });
 });

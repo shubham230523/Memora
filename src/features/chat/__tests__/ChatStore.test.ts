@@ -58,13 +58,10 @@ describe('ChatStore', () => {
     (knowledgeRepository.getAll as jest.Mock).mockResolvedValue([
       { title: 'K1', content: 'Info 1' }
     ]);
+    (knowledgeRepository.searchChunks as jest.Mock).mockResolvedValue([]);
 
     const mockAIProvider = {
-      streamGenerate: jest.fn().mockImplementation((req, cb) => {
-        cb({ text: 'hi there', isFinal: false });
-        cb({ text: '', isFinal: true });
-        return Promise.resolve();
-      })
+      generate: jest.fn().mockResolvedValue({ text: 'hi there' })
     };
     (getAIProvider as jest.Mock).mockReturnValue(mockAIProvider);
 
@@ -72,10 +69,10 @@ describe('ChatStore', () => {
 
     expect(chatRepository.addMessage).toHaveBeenCalledTimes(2);
     expect(knowledgeRepository.getAll).toHaveBeenCalledWith({ search: 'hello' });
-    expect(mockAIProvider.streamGenerate).toHaveBeenCalledWith(expect.objectContaining({
-      prompt: 'hello',
-      systemPrompt: expect.stringContaining('[NOTE #1]')
-    }), expect.any(Function));
+    expect(mockAIProvider.generate).toHaveBeenCalledWith(expect.objectContaining({
+      prompt: expect.stringContaining('hello'),
+      systemPrompt: expect.stringContaining('helpful assistant')
+    }));
 
     expect(useChatStore.getState().messages.length).toBe(2);
     expect(useChatStore.getState().messages[1].content).toBe('hi there');

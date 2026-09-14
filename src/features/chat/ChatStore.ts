@@ -89,6 +89,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
         knowledgeRepository.searchChunks(expandedKeywords)
       ]);
 
+      relevantChunks = relevantChunks || [];
+      relevantItems = relevantItems || [];
+
       // DEEP SEARCH: If we found relevant documents but not their chunks,
       // pull all chunks for those documents and search them manually.
       if (relevantItems.length > 0 && relevantChunks.length === 0) {

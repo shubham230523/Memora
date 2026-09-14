@@ -4,6 +4,7 @@ import { logger } from '../../../core/logging/Logger';
 
 jest.mock('expo-image-picker', () => ({
   requestCameraPermissionsAsync: jest.fn(),
+  getCameraPermissionsAsync: jest.fn(),
   launchCameraAsync: jest.fn(),
 }));
 
@@ -24,13 +25,15 @@ describe('ExpoCamera', () => {
 
   describe('requestPermissions', () => {
     it('should return true if status is granted', async () => {
-      (ImagePicker.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted' });
+      (ImagePicker.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({ granted: false });
+      (ImagePicker.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted', granted: true });
       const granted = await camera.requestPermissions();
       expect(granted).toBe(true);
     });
 
     it('should return false if status is not granted', async () => {
-      (ImagePicker.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'denied' });
+      (ImagePicker.getCameraPermissionsAsync as jest.Mock).mockResolvedValue({ granted: false });
+      (ImagePicker.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'denied', granted: false });
       const granted = await camera.requestPermissions();
       expect(granted).toBe(false);
     });
